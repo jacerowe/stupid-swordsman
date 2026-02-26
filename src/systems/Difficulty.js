@@ -1,25 +1,31 @@
 class Difficulty {
   constructor(scene) {
     this.scene = scene;
-    this.speed = 220;
+    this.speed = 300;
+    this.milestone300 = false;
     this.milestone500 = false;
-    this.milestone1000 = false;
+    this.milestone700 = false;
   }
 
   update(score) {
+    if (!this.milestone300 && score >= 300) {
+      this.milestone300 = true;
+      this.speed = 380;
+      this._showMilestone('Faster!', 0xffdd44);
+    }
     if (!this.milestone500 && score >= 500) {
       this.milestone500 = true;
-      this.speed = 310;
-      this._showMilestone('Speed Increase!', 0xffdd44);
+      this.speed = 450;
+      this._showMilestone('Bats!', 0xaa44ff);
     }
-    if (!this.milestone1000 && score >= 1000) {
-      this.milestone1000 = true;
-      this.speed = 380;
+    if (!this.milestone700 && score >= 700) {
+      this.milestone700 = true;
+      this.speed = 520;
       this._showMilestone('Armored Enemies!', 0xff4444);
     }
-    if (score > 1000) {
-      const extra = Math.floor((score - 1000) / 500) * 12;
-      this.speed = Math.min(600, 380 + extra);
+    if (score > 700) {
+      const extra = Math.floor((score - 700) / 100) * 10;
+      this.speed = Math.min(700, 520 + extra);
     }
   }
 
