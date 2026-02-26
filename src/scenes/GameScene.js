@@ -232,10 +232,17 @@ class GameScene extends Phaser.Scene {
 
     for (const e of this.enemies) {
       if (e.dead) continue;
-      const xOverlap = Math.abs(px - e.x) < (pHalfW + e.width * 0.4);
-      if (xOverlap) {
-        player.takeDamage();
-        break;
+      if (e instanceof EnemyBat) {
+        if (overlaps(px, py, pHalfW * 2, pHalfH * 2, e.x, e.y, e.width * 0.8, e.height * 0.8)) {
+          player.takeDamage();
+          break;
+        }
+      } else {
+        const xOverlap = Math.abs(px - e.x) < (pHalfW + e.width * 0.4);
+        if (xOverlap) {
+          player.takeDamage();
+          break;
+        }
       }
     }
 
@@ -249,12 +256,12 @@ class GameScene extends Phaser.Scene {
     if (player.sword && player.sword.isActive()) {
       const sx = player.sword.getHitboxX();
       const sy = player.y;
-      const sw = 55, sh = 50;
+      const sw = 60, sh = 60;
 
       for (let i = this.enemies.length - 1; i >= 0; i--) {
         const e = this.enemies[i];
         if (e.dead || e.hitThisSwing) continue;
-        if (overlaps(sx, sy, sw, sh, e.x, e.y, e.width * 0.7, e.height * 0.9)) {
+        if (overlaps(sx, sy, sw, sh, e.x, e.y, e.width * 0.8, e.height * 0.9)) {
           e.hitThisSwing = true;
           e.takeHit(this.player);
           if (e.dead) {
