@@ -305,7 +305,7 @@ class GameScene extends Phaser.Scene {
     }
     for (let i = this.coins.length - 1; i >= 0; i--) {
       const c = this.coins[i];
-      c.update(dt, effectiveSpeed);
+      c.update(dt, speed);
       if (c.x < -100) {
         c.destroy();
         this.coins.splice(i, 1);
