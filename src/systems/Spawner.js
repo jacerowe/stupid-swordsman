@@ -11,10 +11,9 @@ class Spawner {
   }
 
   _randomInterval(score, speed) {
-    const base = score >= 500 ? 0.7 : 0.9;
-    const top  = score >= 500 ? 1.3 : 1.6;
-    const speedFactor = Math.max(0.6, 1 - (speed - 220) / 600);
-    return (base + Math.random() * (top - base)) * speedFactor;
+    const base = score >= 500 ? 0.85 : 1.0;
+    const top  = score >= 500 ? 1.5 : 1.8;
+    return base + Math.random() * (top - base);
   }
 
   update(time, dt, score, speed) {
@@ -27,9 +26,7 @@ class Spawner {
 
     let spawnCrate = Math.random() < this.CRATE_CHANCE;
 
-    if (this.lastWasCrate && spawnCrate) {
-      if (Math.random() < 0.55) spawnCrate = false;
-    }
+    if (this.lastWasCrate) spawnCrate = false;
 
     if (spawnCrate) {
       const crateY = groundY - 20;
@@ -42,15 +39,12 @@ class Spawner {
                            Math.random() < (this.ARMORED_CHANCE_BASE + Math.min(0.22, (score - 1000) / 8000)) &&
                            this.consecutiveArmored < 2;
 
-      let enemyY;
       if (spawnArmored) {
-        enemyY = groundY - 27;
-        const enemy = new EnemyArmored(this.scene, spawnX, enemyY);
+        const enemy = new EnemyArmored(this.scene, spawnX, groundY - 27);
         this.scene.enemies.push(enemy);
         this.consecutiveArmored++;
       } else {
-        enemyY = groundY - 24;
-        const enemy = new EnemyBasic(this.scene, spawnX, enemyY);
+        const enemy = new EnemyBasic(this.scene, spawnX, groundY - 24);
         this.scene.enemies.push(enemy);
         this.consecutiveArmored = 0;
       }
@@ -60,7 +54,7 @@ class Spawner {
     }
 
     let interval = this._randomInterval(score, speed);
-    if (this.lastWasCrate && this.lastWasEnemy) interval *= 1.25;
-    this.timer = Math.max(0.55, interval);
+    if (spawnCrate || this.lastWasCrate) interval *= 1.3;
+    this.timer = Math.max(0.85, interval);
   }
 }

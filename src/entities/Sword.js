@@ -14,9 +14,9 @@ class Sword {
 
     this.container = scene.add.container(player.x, player.y).setDepth(6);
 
-    this.blade = scene.add.rectangle(30, 0, 44, 8, 0xddddee);
-    this.guard = scene.add.rectangle(10, 0, 8, 18, 0xaa8833);
-    this.grip = scene.add.rectangle(2, 0, 10, 12, 0x663311);
+    this.blade = scene.add.rectangle(22, 0, 40, 7, 0xddddee);
+    this.guard = scene.add.rectangle(4, 0, 7, 16, 0xaa8833);
+    this.grip = scene.add.rectangle(-3, 0, 9, 11, 0x663311);
 
     this.container.add([this.grip, this.guard, this.blade]);
 
@@ -50,7 +50,7 @@ class Sword {
   }
 
   getHitboxX() {
-    return this.player.x + 36;
+    return this.player.x + 30;
   }
 
   update(time, delta) {

@@ -6,7 +6,7 @@ class GameScene extends Phaser.Scene {
   create() {
     this.W = this.scale.width;
     this.H = this.scale.height;
-    this.groundY = this.H - 60;
+    this.groundY = this.H - 60 + 28;
 
     this.gameOver = false;
     this.score = 0;
@@ -16,7 +16,7 @@ class GameScene extends Phaser.Scene {
     this._buildBackground();
     this._buildGround();
 
-    this.player = new Player(this, Math.floor(this.W * 0.22), this.groundY);
+    this.player = new Player(this, Math.floor(this.W * 0.22), this.groundY - 26);
 
     this.enemies = [];
     this.crates = [];
@@ -93,10 +93,6 @@ class GameScene extends Phaser.Scene {
       });
     }, [0.25, 0.4], -7);
 
-    this.bgGround = this._createScrollLayer(1, (g) => {
-      g.fillStyle(0x0a2a0a, 1);
-      g.fillRect(0, this.groundY + 28, 900, 20);
-    }, [0.6], -6);
   }
 
   _createScrollLayer(count, drawFn, speeds, depth) {
@@ -117,20 +113,20 @@ class GameScene extends Phaser.Scene {
     const groundH = 40;
     this.groundGroup = this.physics.add.staticGroup();
 
-    const groundBody = this.groundGroup.create(W / 2, this.groundY + 28 + groundH / 2);
+    const groundBody = this.groundGroup.create(W / 2, this.groundY + groundH / 2);
     groundBody.setVisible(false);
     groundBody.refreshBody();
     groundBody.body.setSize(W * 3, groundH);
 
     const groundGfx = this.add.graphics().setDepth(0);
     groundGfx.fillStyle(0x1a3a1a, 1);
-    groundGfx.fillRect(0, this.groundY + 28, W, 8);
+    groundGfx.fillRect(0, this.groundY, W, 8);
     groundGfx.fillStyle(0x0d1f0d, 1);
-    groundGfx.fillRect(0, this.groundY + 36, W, 32);
+    groundGfx.fillRect(0, this.groundY + 8, W, 32);
 
     this.groundStripes = [];
     for (let x = 0; x < W + 40; x += 40) {
-      const stripe = this.add.rectangle(x, this.groundY + 30, 3, 6, 0x2a5a2a).setDepth(1);
+      const stripe = this.add.rectangle(x, this.groundY + 2, 3, 6, 0x2a5a2a).setDepth(1);
       this.groundStripes.push({ obj: stripe, baseX: x });
     }
   }
@@ -236,7 +232,8 @@ class GameScene extends Phaser.Scene {
 
     for (const e of this.enemies) {
       if (e.dead) continue;
-      if (overlaps(px, py, pHalfW * 2, pHalfH * 2, e.x, e.y, e.width * 0.7, e.height * 0.9)) {
+      const xOverlap = Math.abs(px - e.x) < (pHalfW + e.width * 0.4);
+      if (xOverlap) {
         player.takeDamage();
         break;
       }
