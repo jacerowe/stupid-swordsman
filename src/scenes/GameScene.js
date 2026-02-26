@@ -23,6 +23,9 @@ class GameScene extends Phaser.Scene {
     this.powerups = [];
     this.scoreMultiplier = 1;
     this.scoreMultiplierTimer = 0;
+    this.fireballActive = false;
+    this.fireballTimer = 0;
+    this.fireballOverlay = null;
 
     this.spawner = new Spawner(this);
 
@@ -45,6 +48,14 @@ class GameScene extends Phaser.Scene {
       fontFamily: 'Arial Black, sans-serif',
       color: '#ffdd00',
       stroke: '#005500',
+      strokeThickness: 4
+    }).setOrigin(0.5).setDepth(20).setAlpha(0);
+
+    this.fireballText = this.add.text(this.W / 2, 110, '🔥 FIREBALL DASH!', {
+      fontSize: '22px',
+      fontFamily: 'Arial Black, sans-serif',
+      color: '#ff4400',
+      stroke: '#000000',
       strokeThickness: 4
     }).setOrigin(0.5).setDepth(20).setAlpha(0);
 
@@ -173,13 +184,30 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    this._scrollBackground(speed, dt);
+    if (this.fireballTimer > 0) {
+      this.fireballTimer -= dt;
+      if (this.fireballTimer <= 0) {
+        this.fireballActive = false;
+        this.fireballTimer = 0;
+        this.player.invulnerable = false;
+        this.player.invulnerableTimer = 0;
+        if (this.fireballOverlay) {
+          this.tweens.add({ targets: this.fireballOverlay, alpha: 0, duration: 300,
+            onComplete: () => { this.fireballOverlay.destroy(); this.fireballOverlay = null; } });
+        }
+        this.tweens.add({ targets: this.fireballText, alpha: 0, duration: 300 });
+      }
+    }
+
+    const effectiveSpeed = this.fireballActive ? speed * 4 : speed;
+
+    this._scrollBackground(effectiveSpeed, dt);
 
     this.player.update(time, delta);
 
     this.spawner.update(time, dt, this.score, speed);
 
-    this._updateEntities(dt, speed);
+    this._updateEntities(dt, effectiveSpeed);
     this._checkCollisions();
 
     if (this.uiScene) {
@@ -310,10 +338,24 @@ class GameScene extends Phaser.Scene {
       if (overlaps(px, py, pHalfW * 2, pHalfH * 2, p.x, p.y, p.width, p.height)) {
         p.collect();
         this.powerups.splice(i, 1);
-        this.scoreMultiplier = 2;
-        this.scoreMultiplierTimer = 3;
-        this.tweens.killTweensOf(this.x2Text);
-        this.x2Text.setAlpha(1);
+        if (p instanceof PowerupFireball) {
+          this.fireballActive = true;
+          this.fireballTimer = 2.5;
+          this.score += 100;
+          this.player.invulnerable = true;
+          this.player.invulnerableTimer = 9999;
+          if (this.fireballOverlay) this.fireballOverlay.destroy();
+          this.fireballOverlay = this.add.rectangle(
+            this.W / 2, this.H / 2, this.W, this.H, 0xff3300, 0.18
+          ).setDepth(15);
+          this.tweens.killTweensOf(this.fireballText);
+          this.fireballText.setAlpha(1);
+        } else {
+          this.scoreMultiplier = 2;
+          this.scoreMultiplierTimer = 3;
+          this.tweens.killTweensOf(this.x2Text);
+          this.x2Text.setAlpha(1);
+        }
       }
     }
   }

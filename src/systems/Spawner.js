@@ -11,7 +11,8 @@ class Spawner {
     this.BAT_CHANCE = 0.35;
     this.ARMORED_CHANCE_BASE = 0.30;
     this.CLUSTER_CHANCE = 0.30;
-    this.POWERUP_CHANCE = 0.06;
+    this.X2_CHANCE = 0.15;
+    this.FIREBALL_CHANCE = 0.05;
   }
 
   _randomInterval(score) {
@@ -53,16 +54,17 @@ class Spawner {
     const roll = Math.random();
 
     let spawned = 'enemy';
+    const totalPowerup = this.X2_CHANCE + this.FIREBALL_CHANCE;
 
-    if (canPowerup && roll < this.POWERUP_CHANCE) {
-      spawned = 'powerup';
-    } else if (!this.lastWasCrate && roll < this.POWERUP_CHANCE + this.CRATE_CHANCE) {
+    if (canPowerup && roll < totalPowerup) {
+      spawned = roll < this.FIREBALL_CHANCE ? 'fireball' : 'x2';
+    } else if (!this.lastWasCrate && roll < totalPowerup + this.CRATE_CHANCE) {
       spawned = 'crate';
-    } else if (canBat && !this.lastWasBat && roll < this.POWERUP_CHANCE + this.CRATE_CHANCE + this.BAT_CHANCE) {
+    } else if (canBat && !this.lastWasBat && roll < totalPowerup + this.CRATE_CHANCE + this.BAT_CHANCE) {
       spawned = 'bat';
     }
 
-    if (spawned === 'powerup') {
+    if (spawned === 'x2' || spawned === 'fireball') {
       const heightRoll = Math.random();
       let puY;
       if (heightRoll < 0.33) {
@@ -72,8 +74,13 @@ class Spawner {
       } else {
         puY = groundY - 155;
       }
-      const pu = new PowerupX2(this.scene, spawnX, puY);
-      this.scene.powerups.push(pu);
+      if (spawned === 'fireball') {
+        const pu = new PowerupFireball(this.scene, spawnX, puY);
+        this.scene.powerups.push(pu);
+      } else {
+        const pu = new PowerupX2(this.scene, spawnX, puY);
+        this.scene.powerups.push(pu);
+      }
       this.lastWasCrate = false;
       this.lastWasBat = false;
     } else if (spawned === 'crate') {
@@ -92,8 +99,11 @@ class Spawner {
       this.lastWasCrate = false;
       this.lastWasBat = false;
 
-      if (!wasArmored && Math.random() < this.CLUSTER_CHANCE) {
-        const gap = Phaser.Math.Between(50, 80);
+      const clusterChance = score >= 700 ? 0.15 : this.CLUSTER_CHANCE;
+      const clusterGapMin = score >= 700 ? 90 : 50;
+      const clusterGapMax = score >= 700 ? 130 : 80;
+      if (!wasArmored && Math.random() < clusterChance) {
+        const gap = Phaser.Math.Between(clusterGapMin, clusterGapMax);
         this._spawnGroundEnemy(spawnX + gap, groundY, score);
       }
     }
