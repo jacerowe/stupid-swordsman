@@ -21,6 +21,7 @@ class GameScene extends Phaser.Scene {
     this.enemies = [];
     this.crates = [];
     this.powerups = [];
+    this.coins = [];
     this.scoreMultiplier = 1;
     this.scoreMultiplierTimer = 0;
     this.fireballActive = false;
@@ -180,7 +181,7 @@ class GameScene extends Phaser.Scene {
     const speed = this.difficulty.getSpeed();
 
     this.scoreTimer += dt;
-    if (this.scoreTimer >= 0.1) {
+    if (this.scoreTimer >= 0.05) {
       this.score += this.scoreMultiplier;
       this.scoreTimer = 0;
       this.difficulty.update(this.score);
@@ -302,6 +303,14 @@ class GameScene extends Phaser.Scene {
         this.powerups.splice(i, 1);
       }
     }
+    for (let i = this.coins.length - 1; i >= 0; i--) {
+      const c = this.coins[i];
+      c.update(dt, effectiveSpeed);
+      if (c.x < -100) {
+        c.destroy();
+        this.coins.splice(i, 1);
+      }
+    }
   }
 
   _checkCollisions() {
@@ -347,7 +356,7 @@ class GameScene extends Phaser.Scene {
           if (player.sword) player.sword.hitSomethingThisSwing = true;
           e.takeHit(this.player);
           if (e.dead) {
-            this.score += 10;
+            this.score += 10 * this.scoreMultiplier;
             setTimeout(() => {
               const idx = this.enemies.indexOf(e);
               if (idx !== -1) this.enemies.splice(idx, 1);
@@ -391,6 +400,22 @@ class GameScene extends Phaser.Scene {
           this.tweens.killTweensOf(this.x2Text);
           this.x2Text.setAlpha(1);
         }
+      }
+    }
+
+    for (let i = this.coins.length - 1; i >= 0; i--) {
+      const c = this.coins[i];
+      if (c.collected) continue;
+      if (overlaps(px, py, pHalfW * 2, pHalfH * 2, c.x, c.y, c.width, c.height)) {
+        c.collect();
+        this.coins.splice(i, 1);
+        this.score += c.scoreValue * this.scoreMultiplier;
+        const popup = this.add.text(c.x, c.y - 10, '+' + (c.scoreValue * this.scoreMultiplier), {
+          fontSize: '14px', fontFamily: 'Arial Black', color: '#ffee00',
+          stroke: '#000000', strokeThickness: 3
+        }).setDepth(25);
+        this.tweens.add({ targets: popup, y: popup.y - 35, alpha: 0, duration: 700,
+          onComplete: () => popup.destroy() });
       }
     }
   }

@@ -14,6 +14,9 @@ class Spawner {
     this.X2_CHANCE = 0.08;
     this.FIREBALL_CHANCE = 0.05;
     this.SHIELD_CHANCE = 0.07;
+    this.COIN_CHANCE = 0.15;
+    this.COINBAG_CHANCE = 0.07;
+    this.COINSAFE_CHANCE = 0.02;
   }
 
   _randomInterval(score) {
@@ -56,18 +59,43 @@ class Spawner {
 
     let spawned = 'enemy';
     const totalPowerup = this.FIREBALL_CHANCE + this.SHIELD_CHANCE + this.X2_CHANCE;
+    const totalCoins = this.COIN_CHANCE + this.COINBAG_CHANCE + this.COINSAFE_CHANCE;
 
     if (canPowerup && roll < totalPowerup) {
       if (roll < this.FIREBALL_CHANCE) spawned = 'fireball';
       else if (roll < this.FIREBALL_CHANCE + this.SHIELD_CHANCE) spawned = 'shield';
       else spawned = 'x2';
-    } else if (!this.lastWasCrate && roll < totalPowerup + this.CRATE_CHANCE) {
+    } else if (roll < totalPowerup + totalCoins) {
+      const coinRoll = roll - totalPowerup;
+      if (coinRoll < this.COINSAFE_CHANCE) spawned = 'coinsafe';
+      else if (coinRoll < this.COINSAFE_CHANCE + this.COINBAG_CHANCE) spawned = 'coinbag';
+      else spawned = 'coin';
+    } else if (!this.lastWasCrate && roll < totalPowerup + totalCoins + this.CRATE_CHANCE) {
       spawned = 'crate';
-    } else if (canBat && !this.lastWasBat && roll < totalPowerup + this.CRATE_CHANCE + this.BAT_CHANCE) {
+    } else if (canBat && !this.lastWasBat && roll < totalPowerup + totalCoins + this.CRATE_CHANCE + this.BAT_CHANCE) {
       spawned = 'bat';
     }
 
-    if (spawned === 'x2' || spawned === 'fireball' || spawned === 'shield') {
+    if (spawned === 'coin' || spawned === 'coinbag' || spawned === 'coinsafe') {
+      const heightRoll = Math.random();
+      let cY;
+      if (heightRoll < 0.5) {
+        cY = groundY - 16;
+      } else if (heightRoll < 0.8) {
+        cY = groundY - 55;
+      } else {
+        cY = groundY - 155;
+      }
+      if (spawned === 'coinsafe') {
+        this.scene.coins.push(new CoinSafe(this.scene, spawnX, cY));
+      } else if (spawned === 'coinbag') {
+        this.scene.coins.push(new CoinBag(this.scene, spawnX, cY));
+      } else {
+        this.scene.coins.push(new Coin(this.scene, spawnX, cY));
+      }
+      this.lastWasCrate = false;
+      this.lastWasBat = false;
+    } else if (spawned === 'x2' || spawned === 'fireball' || spawned === 'shield') {
       const heightRoll = Math.random();
       let puY;
       if (heightRoll < 0.33) {

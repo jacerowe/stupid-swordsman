@@ -20,14 +20,14 @@ class EnemyBat {
   _buildGraphics() {
     this.container = this.scene.add.container(this.x, this.y).setDepth(4);
 
-    this.wingL = this.scene.add.triangle(-18, 0, -22, -6, 0, -2, -2, 12, 0x442266);
-    this.wingR = this.scene.add.triangle(18, 0, 22, -6, 0, -2, 2, 12, 0x442266);
+    this.wingL = this.scene.add.triangle(0, 0, 0, -4, -32, -8, -4, 10, 0x442266);
+    this.wingR = this.scene.add.triangle(0, 0, 0, -4, 32, -8, 4, 10, 0x442266);
     this.body  = this.scene.add.ellipse(0, 2, 22, 18, 0x221133);
-    this.head  = this.scene.add.circle(0, -8, 8, 0x331144);
-    this.earL  = this.scene.add.triangle(-5, -14, -8, -14, -2, -14, -5, -22, 0x442266);
-    this.earR  = this.scene.add.triangle(5, -14, 2, -14, 8, -14, 5, -22, 0x442266);
-    this.eyeL  = this.scene.add.rectangle(-3, -9, 4, 4, 0xff3399);
-    this.eyeR  = this.scene.add.rectangle(3, -9, 4, 4, 0xff3399);
+    this.head  = this.scene.add.circle(0, -10, 8, 0x331144);
+    this.earL  = this.scene.add.triangle(-5, -18, -8, 0, -2, 0, -5, -10, 0x442266);
+    this.earR  = this.scene.add.triangle(5, -18, 2, 0, 8, 0, 5, -10, 0x442266);
+    this.eyeL  = this.scene.add.rectangle(-3, -11, 4, 4, 0xff3399);
+    this.eyeR  = this.scene.add.rectangle(3, -11, 4, 4, 0xff3399);
 
     this.container.add([this.wingL, this.wingR, this.body, this.head,
                         this.earL, this.earR, this.eyeL, this.eyeR]);
@@ -52,8 +52,8 @@ class EnemyBat {
       this.wingL.setScale(1, 1);
       this.wingR.setScale(1, 1);
     } else {
-      this.wingL.setScale(1, 0.4);
-      this.wingR.setScale(1, 0.4);
+      this.wingL.setScale(1, 0.3);
+      this.wingR.setScale(1, 0.3);
     }
   }
 

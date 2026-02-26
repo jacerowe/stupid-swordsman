@@ -49,7 +49,7 @@ class Player {
     this.head = this.scene.add.circle(0, -18, 13, 0xffcc99);
     this.container.add(this.head);
 
-    this.hair = this.scene.add.triangle(0, -28, -13, 0, 13, 0, 0, -16, 0x553311);
+    this.hair = this.scene.add.triangle(0, -31, -11, 0, 11, 0, 0, -14, 0x553311);
     this.container.add(this.hair);
 
     this.eyeL = this.scene.add.rectangle(-4, -18, 3, 4, 0x111111);
