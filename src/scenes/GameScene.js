@@ -31,6 +31,12 @@ class GameScene extends Phaser.Scene {
       }
     });
 
+    this.events.on('swordWhiff', () => {
+      if (!this.gameOver) {
+        this.score = Math.max(0, this.score - 10);
+      }
+    });
+
     this.scene.launch('UIScene');
     this.uiScene = this.scene.get('UIScene');
   }
@@ -232,17 +238,10 @@ class GameScene extends Phaser.Scene {
 
     for (const e of this.enemies) {
       if (e.dead) continue;
-      if (e instanceof EnemyBat) {
-        if (overlaps(px, py, pHalfW * 2, pHalfH * 2, e.x, e.y, e.width * 0.8, e.height * 0.8)) {
-          player.takeDamage();
-          break;
-        }
-      } else {
-        const xOverlap = Math.abs(px - e.x) < (pHalfW + e.width * 0.4);
-        if (xOverlap) {
-          player.takeDamage();
-          break;
-        }
+      const xOverlap = Math.abs(px - e.x) < (pHalfW + e.width * 0.4);
+      if (xOverlap) {
+        player.takeDamage();
+        break;
       }
     }
 
@@ -263,6 +262,7 @@ class GameScene extends Phaser.Scene {
         if (e.dead || e.hitThisSwing) continue;
         if (overlaps(sx, sy, sw, sh, e.x, e.y, e.width * 0.8, e.height * 0.9)) {
           e.hitThisSwing = true;
+          if (player.sword) player.sword.hitSomethingThisSwing = true;
           e.takeHit(this.player);
           if (e.dead) {
             this.score += 10;

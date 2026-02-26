@@ -7,6 +7,7 @@ class Sword {
     this.swinging = false;
     this.cooldown = 0;
     this.cooldownDuration = 0.001;
+    this.hitSomethingThisSwing = false;
     this.swingTimer = 0;
     this.swingDuration = 0.18;
     this.activeFrameStart = 0.04;
@@ -36,6 +37,7 @@ class Sword {
 
     this.swinging = true;
     this.swingTimer = 0;
+    this.hitSomethingThisSwing = false;
     this._swingFrom = this.restState === 'UP' ? -Math.PI / 3.5 : Math.PI / 3.5;
     this._swingTo = this.restState === 'UP' ? Math.PI / 3.5 : -Math.PI / 3.5;
     this._nextRestState = this.restState === 'UP' ? 'DOWN' : 'UP';
@@ -73,6 +75,9 @@ class Sword {
         this.cooldown = this.cooldownDuration;
         this.restState = this._nextRestState;
         this._setRestAngle();
+        if (!this.hitSomethingThisSwing) {
+          this.scene.events.emit('swordWhiff');
+        }
       }
     }
   }
