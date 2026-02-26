@@ -26,6 +26,9 @@ class GameScene extends Phaser.Scene {
     this.fireballActive = false;
     this.fireballTimer = 0;
     this.fireballOverlay = null;
+    this.shieldActive = false;
+    this.shieldTimer = 0;
+    this.shieldGfx = null;
 
     this.spawner = new Spawner(this);
 
@@ -56,6 +59,14 @@ class GameScene extends Phaser.Scene {
       fontFamily: 'Arial Black, sans-serif',
       color: '#ff4400',
       stroke: '#000000',
+      strokeThickness: 4
+    }).setOrigin(0.5).setDepth(20).setAlpha(0);
+
+    this.shieldText = this.add.text(this.W / 2, 140, '🛡️ SHIELD ACTIVE!', {
+      fontSize: '22px',
+      fontFamily: 'Arial Black, sans-serif',
+      color: '#88ccff',
+      stroke: '#000033',
       strokeThickness: 4
     }).setOrigin(0.5).setDepth(20).setAlpha(0);
 
@@ -191,11 +202,24 @@ class GameScene extends Phaser.Scene {
         this.fireballTimer = 0;
         this.player.invulnerable = false;
         this.player.invulnerableTimer = 0;
+        this.player.flashTimer = 0;
+        this.player.allParts.forEach(p => p.setAlpha(1));
         if (this.fireballOverlay) {
           this.tweens.add({ targets: this.fireballOverlay, alpha: 0, duration: 300,
             onComplete: () => { this.fireballOverlay.destroy(); this.fireballOverlay = null; } });
         }
         this.tweens.add({ targets: this.fireballText, alpha: 0, duration: 300 });
+      }
+    }
+
+    if (this.shieldTimer > 0) {
+      this.shieldTimer -= dt;
+      if (this.shieldGfx) {
+        this.shieldGfx.setPosition(this.player.x, this.player.y - 5);
+        this.shieldGfx.setAlpha(0.35 + Math.sin(Date.now() / 150) * 0.1);
+      }
+      if (this.shieldTimer <= 0) {
+        this._breakShield();
       }
     }
 
@@ -296,14 +320,16 @@ class GameScene extends Phaser.Scene {
       if (e.dead) continue;
       const xOverlap = Math.abs(px - e.x) < (pHalfW + e.width * 0.4);
       if (xOverlap) {
-        player.takeDamage();
+        if (this.shieldActive) { this._breakShield(); }
+        else { player.takeDamage(); }
         break;
       }
     }
 
     for (const c of this.crates) {
       if (overlaps(px, py, pHalfW * 2, pHalfH * 2, c.x, c.y, c.width * 0.8, c.height * 0.8)) {
-        player.takeDamage();
+        if (this.shieldActive) { this._breakShield(); }
+        else { player.takeDamage(); }
         break;
       }
     }
@@ -350,6 +376,15 @@ class GameScene extends Phaser.Scene {
           ).setDepth(15);
           this.tweens.killTweensOf(this.fireballText);
           this.fireballText.setAlpha(1);
+        } else if (p instanceof PowerupShield) {
+          this.shieldActive = true;
+          this.shieldTimer = 10;
+          if (this.shieldGfx) this.shieldGfx.destroy();
+          this.shieldGfx = this.add.circle(
+            this.player.x, this.player.y - 5, 34, 0x4488ff, 0.4
+          ).setStrokeStyle(3, 0xaaddff).setDepth(6);
+          this.tweens.killTweensOf(this.shieldText);
+          this.shieldText.setAlpha(1);
         } else {
           this.scoreMultiplier = 2;
           this.scoreMultiplierTimer = 3;
@@ -358,6 +393,24 @@ class GameScene extends Phaser.Scene {
         }
       }
     }
+  }
+
+  _breakShield() {
+    this.shieldActive = false;
+    this.shieldTimer = 0;
+    if (this.shieldGfx) {
+      this.tweens.add({
+        targets: this.shieldGfx,
+        alpha: 0, scaleX: 2, scaleY: 2,
+        duration: 250,
+        onComplete: () => { if (this.shieldGfx) { this.shieldGfx.destroy(); this.shieldGfx = null; } }
+      });
+    }
+    this.tweens.add({ targets: this.shieldText, alpha: 0, duration: 300 });
+    this.player.invulnerable = true;
+    this.player.invulnerableTimer = 0.5;
+    this.player.flashTimer = 0;
+    this.cameras.main.shake(120, 0.006);
   }
 
   triggerGameOver() {

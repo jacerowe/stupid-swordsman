@@ -11,8 +11,9 @@ class Spawner {
     this.BAT_CHANCE = 0.35;
     this.ARMORED_CHANCE_BASE = 0.30;
     this.CLUSTER_CHANCE = 0.30;
-    this.X2_CHANCE = 0.15;
+    this.X2_CHANCE = 0.08;
     this.FIREBALL_CHANCE = 0.05;
+    this.SHIELD_CHANCE = 0.07;
   }
 
   _randomInterval(score) {
@@ -54,17 +55,19 @@ class Spawner {
     const roll = Math.random();
 
     let spawned = 'enemy';
-    const totalPowerup = this.X2_CHANCE + this.FIREBALL_CHANCE;
+    const totalPowerup = this.FIREBALL_CHANCE + this.SHIELD_CHANCE + this.X2_CHANCE;
 
     if (canPowerup && roll < totalPowerup) {
-      spawned = roll < this.FIREBALL_CHANCE ? 'fireball' : 'x2';
+      if (roll < this.FIREBALL_CHANCE) spawned = 'fireball';
+      else if (roll < this.FIREBALL_CHANCE + this.SHIELD_CHANCE) spawned = 'shield';
+      else spawned = 'x2';
     } else if (!this.lastWasCrate && roll < totalPowerup + this.CRATE_CHANCE) {
       spawned = 'crate';
     } else if (canBat && !this.lastWasBat && roll < totalPowerup + this.CRATE_CHANCE + this.BAT_CHANCE) {
       spawned = 'bat';
     }
 
-    if (spawned === 'x2' || spawned === 'fireball') {
+    if (spawned === 'x2' || spawned === 'fireball' || spawned === 'shield') {
       const heightRoll = Math.random();
       let puY;
       if (heightRoll < 0.33) {
@@ -75,11 +78,11 @@ class Spawner {
         puY = groundY - 155;
       }
       if (spawned === 'fireball') {
-        const pu = new PowerupFireball(this.scene, spawnX, puY);
-        this.scene.powerups.push(pu);
+        this.scene.powerups.push(new PowerupFireball(this.scene, spawnX, puY));
+      } else if (spawned === 'shield') {
+        this.scene.powerups.push(new PowerupShield(this.scene, spawnX, puY));
       } else {
-        const pu = new PowerupX2(this.scene, spawnX, puY);
-        this.scene.powerups.push(pu);
+        this.scene.powerups.push(new PowerupX2(this.scene, spawnX, puY));
       }
       this.lastWasCrate = false;
       this.lastWasBat = false;
