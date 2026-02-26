@@ -58,7 +58,7 @@ class Spawner {
       this.lastWasCrate = true;
       this.lastWasBat = false;
     } else if (spawned === 'bat') {
-      const batY = groundY - 60 - Phaser.Math.Between(0, 15);
+      const batY = groundY - 155 - Phaser.Math.Between(0, 20);
       const bat = new EnemyBat(this.scene, spawnX, batY);
       this.scene.enemies.push(bat);
       this.lastWasBat = true;
