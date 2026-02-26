@@ -315,31 +315,32 @@ class GameScene extends Phaser.Scene {
 
   _checkCollisions() {
     const player = this.player;
-    if (player.invulnerable || player.health <= 0) return;
-
     const px = player.x, py = player.y;
     const pHalfW = 18, pHalfH = 30;
+    const canTakeDamage = !player.invulnerable && player.health > 0;
 
     const overlaps = (ax, ay, aw, ah, bx, by, bw, bh) => {
       return Math.abs(ax - bx) < (aw / 2 + bw / 2) &&
              Math.abs(ay - by) < (ah / 2 + bh / 2);
     };
 
-    for (const e of this.enemies) {
-      if (e.dead) continue;
-      const xOverlap = Math.abs(px - e.x) < (pHalfW + e.width * 0.4);
-      if (xOverlap) {
-        if (this.shieldActive) { this._breakShield(); }
-        else { player.takeDamage(); }
-        break;
+    if (canTakeDamage) {
+      for (const e of this.enemies) {
+        if (e.dead) continue;
+        const xOverlap = Math.abs(px - e.x) < (pHalfW + e.width * 0.4);
+        if (xOverlap) {
+          if (this.shieldActive) { this._breakShield(); }
+          else { player.takeDamage(); }
+          break;
+        }
       }
-    }
 
-    for (const c of this.crates) {
-      if (overlaps(px, py, pHalfW * 2, pHalfH * 2, c.x, c.y, c.width * 0.8, c.height * 0.8)) {
-        if (this.shieldActive) { this._breakShield(); }
-        else { player.takeDamage(); }
-        break;
+      for (const c of this.crates) {
+        if (overlaps(px, py, pHalfW * 2, pHalfH * 2, c.x, c.y, c.width * 0.8, c.height * 0.8)) {
+          if (this.shieldActive) { this._breakShield(); }
+          else { player.takeDamage(); }
+          break;
+        }
       }
     }
 
@@ -357,11 +358,8 @@ class GameScene extends Phaser.Scene {
           e.takeHit(this.player);
           if (e.dead) {
             this.score += 10 * this.scoreMultiplier;
-            setTimeout(() => {
-              const idx = this.enemies.indexOf(e);
-              if (idx !== -1) this.enemies.splice(idx, 1);
-              e.destroy();
-            }, 300);
+            e.destroy();
+            this.enemies.splice(i, 1);
           }
         }
       }
