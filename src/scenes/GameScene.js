@@ -20,6 +20,9 @@ class GameScene extends Phaser.Scene {
 
     this.enemies = [];
     this.crates = [];
+    this.powerups = [];
+    this.scoreMultiplier = 1;
+    this.scoreMultiplierTimer = 0;
 
     this.spawner = new Spawner(this);
 
@@ -36,6 +39,14 @@ class GameScene extends Phaser.Scene {
         this.score = Math.max(0, this.score - 10);
       }
     });
+
+    this.x2Text = this.add.text(this.W / 2, 80, 'x2 SCORE!', {
+      fontSize: '22px',
+      fontFamily: 'Arial Black, sans-serif',
+      color: '#ffdd00',
+      stroke: '#005500',
+      strokeThickness: 4
+    }).setOrigin(0.5).setDepth(20).setAlpha(0);
 
     this.scene.launch('UIScene');
     this.uiScene = this.scene.get('UIScene');
@@ -148,9 +159,18 @@ class GameScene extends Phaser.Scene {
 
     this.scoreTimer += dt;
     if (this.scoreTimer >= 0.1) {
-      this.score += 1;
+      this.score += this.scoreMultiplier;
       this.scoreTimer = 0;
       this.difficulty.update(this.score);
+    }
+
+    if (this.scoreMultiplierTimer > 0) {
+      this.scoreMultiplierTimer -= dt;
+      if (this.scoreMultiplierTimer <= 0) {
+        this.scoreMultiplier = 1;
+        this.scoreMultiplierTimer = 0;
+        this.tweens.add({ targets: this.x2Text, alpha: 0, duration: 300 });
+      }
     }
 
     this._scrollBackground(speed, dt);
@@ -222,6 +242,14 @@ class GameScene extends Phaser.Scene {
         this.crates.splice(i, 1);
       }
     }
+    for (let i = this.powerups.length - 1; i >= 0; i--) {
+      const p = this.powerups[i];
+      p.update(dt, speed);
+      if (p.x < -100) {
+        p.destroy();
+        this.powerups.splice(i, 1);
+      }
+    }
   }
 
   _checkCollisions() {
@@ -273,6 +301,19 @@ class GameScene extends Phaser.Scene {
             }, 300);
           }
         }
+      }
+    }
+
+    for (let i = this.powerups.length - 1; i >= 0; i--) {
+      const p = this.powerups[i];
+      if (p.collected) continue;
+      if (overlaps(px, py, pHalfW * 2, pHalfH * 2, p.x, p.y, p.width, p.height)) {
+        p.collect();
+        this.powerups.splice(i, 1);
+        this.scoreMultiplier = 2;
+        this.scoreMultiplierTimer = 3;
+        this.tweens.killTweensOf(this.x2Text);
+        this.x2Text.setAlpha(1);
       }
     }
   }

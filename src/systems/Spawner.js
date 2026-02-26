@@ -4,12 +4,14 @@ class Spawner {
     this.timer = 1.0;
     this.lastWasCrate = false;
     this.lastWasBat = false;
+    this.lastWasArmored = false;
     this.consecutiveArmored = 0;
 
     this.CRATE_CHANCE = 0.28;
     this.BAT_CHANCE = 0.35;
     this.ARMORED_CHANCE_BASE = 0.30;
     this.CLUSTER_CHANCE = 0.30;
+    this.POWERUP_CHANCE = 0.06;
   }
 
   _randomInterval(score) {
@@ -20,16 +22,21 @@ class Spawner {
 
   _spawnGroundEnemy(spawnX, groundY, score) {
     const spawnArmored = score >= 700 &&
+                         !this.lastWasArmored &&
                          Math.random() < (this.ARMORED_CHANCE_BASE + Math.min(0.3, (score - 700) / 3000)) &&
-                         this.consecutiveArmored < 2;
+                         this.consecutiveArmored < 1;
     if (spawnArmored) {
       const enemy = new EnemyArmored(this.scene, spawnX, groundY - 27);
       this.scene.enemies.push(enemy);
       this.consecutiveArmored++;
+      this.lastWasArmored = true;
+      return true;
     } else {
       const enemy = new EnemyBasic(this.scene, spawnX, groundY - 24);
       this.scene.enemies.push(enemy);
       this.consecutiveArmored = 0;
+      this.lastWasArmored = false;
+      return false;
     }
   }
 
@@ -42,17 +49,34 @@ class Spawner {
     const spawnX = W + Phaser.Math.Between(40, 140);
 
     const canBat = score >= 500;
+    const canPowerup = score >= 100;
     const roll = Math.random();
 
     let spawned = 'enemy';
 
-    if (!this.lastWasCrate && roll < this.CRATE_CHANCE) {
+    if (canPowerup && roll < this.POWERUP_CHANCE) {
+      spawned = 'powerup';
+    } else if (!this.lastWasCrate && roll < this.POWERUP_CHANCE + this.CRATE_CHANCE) {
       spawned = 'crate';
-    } else if (canBat && !this.lastWasBat && roll < this.CRATE_CHANCE + this.BAT_CHANCE) {
+    } else if (canBat && !this.lastWasBat && roll < this.POWERUP_CHANCE + this.CRATE_CHANCE + this.BAT_CHANCE) {
       spawned = 'bat';
     }
 
-    if (spawned === 'crate') {
+    if (spawned === 'powerup') {
+      const heightRoll = Math.random();
+      let puY;
+      if (heightRoll < 0.33) {
+        puY = groundY - 16;
+      } else if (heightRoll < 0.66) {
+        puY = groundY - 50;
+      } else {
+        puY = groundY - 155;
+      }
+      const pu = new PowerupX2(this.scene, spawnX, puY);
+      this.scene.powerups.push(pu);
+      this.lastWasCrate = false;
+      this.lastWasBat = false;
+    } else if (spawned === 'crate') {
       const crate = new Crate(this.scene, spawnX, groundY - 20);
       this.scene.crates.push(crate);
       this.lastWasCrate = true;
@@ -64,11 +88,11 @@ class Spawner {
       this.lastWasBat = true;
       this.lastWasCrate = false;
     } else {
-      this._spawnGroundEnemy(spawnX, groundY, score);
+      const wasArmored = this._spawnGroundEnemy(spawnX, groundY, score);
       this.lastWasCrate = false;
       this.lastWasBat = false;
 
-      if (Math.random() < this.CLUSTER_CHANCE) {
+      if (!wasArmored && Math.random() < this.CLUSTER_CHANCE) {
         const gap = Phaser.Math.Between(50, 80);
         this._spawnGroundEnemy(spawnX + gap, groundY, score);
       }
@@ -76,6 +100,7 @@ class Spawner {
 
     let interval = this._randomInterval(score);
     if (spawned === 'crate') interval *= 1.2;
+    if (this.lastWasArmored) interval *= 1.8;
     this.timer = Math.max(0.7, interval);
   }
 }
