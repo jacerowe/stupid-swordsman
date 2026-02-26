@@ -6,7 +6,7 @@ class Sword {
     this.restState = 'UP';
     this.swinging = false;
     this.cooldown = 0;
-    this.cooldownDuration = 0.4;
+    this.cooldownDuration = 0.2;
     this.swingTimer = 0;
     this.swingDuration = 0.18;
     this.activeFrameStart = 0.04;
