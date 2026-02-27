@@ -28,8 +28,14 @@ class CrateSpawner {
 
     const W = this.scene.W;
     const spawnX = W + Phaser.Math.Between(40, 120);
-    const isBreakable = Math.random() < 0.5;
 
+    const tooClose = this.scene.enemies.some(e => !e.dead && Math.abs(e.x - spawnX) < 200);
+    if (tooClose) {
+      this.timer = 0.3;
+      return;
+    }
+
+    const isBreakable = Math.random() < 0.5;
     const hard = score >= 700;
     if (isBreakable) {
       this.scene.crates.push(new BreakableCrate(this.scene, spawnX, this.scene.groundY - 20));
