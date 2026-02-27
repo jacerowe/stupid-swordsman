@@ -69,17 +69,14 @@ class EnemySpawner {
       const wasArmored = this._spawnGroundEnemy(spawnX, groundY, score);
 
       let clusterChance, gapMin, gapMax;
-      if (score >= 1500)      { clusterChance = 0.55; gapMin = 55;  gapMax = 90; }
-      else if (score >= 1000) { clusterChance = 0.45; gapMin = 60;  gapMax = 100; }
+      if (score >= 1500)      { clusterChance = 0.40; gapMin = 70;  gapMax = 110; }
+      else if (score >= 1000) { clusterChance = 0.30; gapMin = 75;  gapMax = 115; }
       else if (score >= 700)  { clusterChance = 0.20; gapMin = 80;  gapMax = 120; }
       else                    { clusterChance = this.CLUSTER_CHANCE; gapMin = 50; gapMax = 80; }
 
       if (!wasArmored && Math.random() < clusterChance) {
         const gap = Phaser.Math.Between(gapMin, gapMax);
         this._spawnGroundEnemy(spawnX + gap, groundY, score);
-        if (score >= 1000 && Math.random() < 0.3) {
-          this._spawnGroundEnemy(spawnX + gap * 2, groundY, score);
-        }
       }
     }
 
