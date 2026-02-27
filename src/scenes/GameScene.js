@@ -341,10 +341,18 @@ class GameScene extends Phaser.Scene {
         }
       }
 
-      for (const c of this.crates) {
+      for (let ci = this.crates.length - 1; ci >= 0; ci--) {
+        const c = this.crates[ci];
+        if (c.dead) continue;
         if (overlaps(px, py, pHalfW * 2, pHalfH * 2, c.x, c.y, c.width * 0.8, c.height * 0.8)) {
-          if (this.shieldActive) { this._breakShield(); }
-          else { player.takeDamage(); }
+          if (c.breakable) {
+            c.smash();
+            this.crates.splice(ci, 1);
+            this.score += 5;
+          } else {
+            if (this.shieldActive) { this._breakShield(); }
+            else { player.takeDamage(); }
+          }
           break;
         }
       }
@@ -367,6 +375,22 @@ class GameScene extends Phaser.Scene {
             e.destroy();
             this.enemies.splice(i, 1);
           }
+        }
+      }
+    }
+
+    if (player.sword && player.sword.isActive()) {
+      const sxb = player.sword.getHitboxX();
+      const syb = player.y;
+      for (let ci = this.crates.length - 1; ci >= 0; ci--) {
+        const c = this.crates[ci];
+        if (!c.breakable || c.dead) continue;
+        if (overlaps(sxb, syb, 60, 60, c.x, c.y, c.width, c.height)) {
+          if (player.sword) player.sword.hitSomethingThisSwing = true;
+          c.smash();
+          this.crates.splice(ci, 1);
+          this.score += 5;
+          break;
         }
       }
     }

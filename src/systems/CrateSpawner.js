@@ -28,7 +28,15 @@ class CrateSpawner {
 
     const W = this.scene.W;
     const spawnX = W + Phaser.Math.Between(40, 120);
-    this.scene.crates.push(new Crate(this.scene, spawnX, this.scene.groundY - 20));
+    const isBreakable = Math.random() < 0.5;
+
+    if (isBreakable) {
+      this.scene.crates.push(new BreakableCrate(this.scene, spawnX, this.scene.groundY - 20));
+    } else {
+      this.scene.crates.push(new Crate(this.scene, spawnX, this.scene.groundY - 20));
+      this.scene.enemySpawner.triggerGlobalCooldown(0.9);
+    }
+
     this.timer = this._randomInterval(score);
   }
 }
