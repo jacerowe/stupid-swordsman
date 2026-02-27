@@ -49,12 +49,11 @@ class Player {
     this.head = this.scene.add.circle(0, -18, 13, 0xffcc99);
     this.container.add(this.head);
 
-    const hatRed  = localStorage.getItem('ss_own_hat_red')  === '1';
-    const hatBlue = localStorage.getItem('ss_own_hat_blue') === '1';
-    const hatColor = hatBlue ? 0x2244cc : (hatRed ? 0xcc2222 : 0x553311);
+    const equippedHat = localStorage.getItem('ss_equip_hat') || 'default';
+    const hatColor = equippedHat === 'hat_blue' ? 0x2244cc : (equippedHat === 'hat_red' ? 0xcc2222 : 0x553311);
     this.hair = this.scene.add.graphics();
     this.hair.fillStyle(hatColor, 1);
-    if (hatBlue) {
+    if (equippedHat === 'hat_blue') {
       this.hair.fillTriangle(-8, -31, 8, -31, 0, -56);
     } else {
       this.hair.fillTriangle(-10, -31, 10, -31, 0, -46);

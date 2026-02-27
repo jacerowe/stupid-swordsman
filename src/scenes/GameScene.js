@@ -20,6 +20,7 @@ class GameScene extends Phaser.Scene {
     this.x2Level      = lvl('x2');       // 0=3s, 1=4s, 2=5s, 3=6s, 4=8s
     this.shieldLevel  = lvl('shield');   // 0=10s, 1=15s, 2=20s, 3=30s
     this.bountyLevel  = lvl('bounty');   // 0=+0, 1=+1, 2=+3, 3=+5, 4=+7
+    this.bandageLevel = lvl('bandage');  // 0=heal1, 1=heal2
     this.upgradeCoinMagnet   = lvl('magnet') > 0 || own('magnet_1');
     this.upgradeExtraHeart   = this.heartsLevel > 0; // legacy compat
     this.upgradeEnemyBounty  = this.bountyLevel > 0; // legacy compat
@@ -225,31 +226,30 @@ class GameScene extends Phaser.Scene {
   }
 
   _showSun() {
+    const sunDepth = 2;
     if (!this.sunGfx) {
-      this.sunGfx = this.add.circle(this.W * 0.78, this.H * 0.17, 22, 0xffdd00).setDepth(-9).setAlpha(0);
-      this.sunRays = this.add.graphics().setDepth(-9).setAlpha(0);
+      this.sunGfx = this.add.circle(this.W * 0.78, this.H * 0.17, 22, 0xffdd00).setDepth(sunDepth).setAlpha(0);
+      this.sunRays = this.add.graphics().setDepth(sunDepth).setAlpha(0);
       this._drawSunRays();
     }
     if (!this.cloudGroup) {
       this.cloudGroup = [];
       const cloudDefs = [
-        { x: this.W * 0.3, y: this.H * 0.12, s: 1.0 },
-        { x: this.W * 0.6, y: this.H * 0.08, s: 0.7 },
+        { x: this.W * 0.3,  y: this.H * 0.12, s: 1.0 },
+        { x: this.W * 0.6,  y: this.H * 0.08, s: 0.7 },
         { x: this.W * 0.15, y: this.H * 0.20, s: 0.85 }
       ];
       cloudDefs.forEach(d => {
-        const g = this.add.graphics().setDepth(-9).setAlpha(0);
-        g.fillStyle(0xffffff, 0.85);
+        const g = this.add.graphics().setDepth(sunDepth).setAlpha(0);
+        g.fillStyle(0xffffff, 0.9);
         g.fillEllipse(0, 0, 70 * d.s, 28 * d.s);
         g.fillEllipse(-18 * d.s, -8 * d.s, 40 * d.s, 28 * d.s);
         g.fillEllipse(18 * d.s, -10 * d.s, 44 * d.s, 30 * d.s);
         g.x = d.x; g.y = d.y;
-        this.cloudGroup.push({ gfx: g, baseX: d.x, speed: 18 + Math.random() * 12 });
-        this.tweens.add({ targets: g, alpha: 1, duration: 1500 });
+        this.cloudGroup.push({ gfx: g, speed: 18 + Math.random() * 12 });
       });
-    } else {
-      this.cloudGroup.forEach(c => this.tweens.add({ targets: c.gfx, alpha: 1, duration: 1500 }));
     }
+    this.cloudGroup.forEach(c => this.tweens.add({ targets: c.gfx, alpha: 1, duration: 1500 }));
     this.tweens.add({ targets: [this.sunGfx, this.sunRays], alpha: 1, duration: 1500 });
   }
 
@@ -555,6 +555,18 @@ class GameScene extends Phaser.Scene {
           ).setStrokeStyle(3, 0xaaddff).setDepth(6);
           this.tweens.killTweensOf(this.shieldText);
           this.shieldText.setAlpha(1);
+        } else if (p instanceof PowerupBandage) {
+          const healAmt = this.bandageLevel > 0 ? 2 : 1;
+          const maxHp = this.player.maxHealth;
+          if (this.player.health < maxHp) {
+            this.player.health = Math.min(this.player.health + healAmt, maxHp);
+            const popup = this.add.text(px, py - 40, '+' + healAmt + ' HP', {
+              fontSize: '18px', fontFamily: 'Arial Black, sans-serif',
+              color: '#ff88aa', stroke: '#000000', strokeThickness: 3
+            }).setOrigin(0.5).setDepth(22);
+            this.tweens.add({ targets: popup, y: py - 80, alpha: 0, duration: 900,
+              onComplete: () => popup.destroy() });
+          }
         } else {
           const x2Durations = [3, 4, 5, 6, 8];
           const x2Dur = x2Durations[this.x2Level] || 3;

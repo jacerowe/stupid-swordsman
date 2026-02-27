@@ -3,9 +3,10 @@ class CollectibleSpawner {
     this.scene = scene;
     this.timer = 3.0;
     this.globalCooldown = 0;
-    this.X2_CHANCE      = 0.10;
-    this.FIREBALL_CHANCE = 0.07;
-    this.SHIELD_CHANCE  = 0.09;
+    this.X2_CHANCE       = 0.10;
+    this.FIREBALL_CHANCE  = 0.07;
+    this.SHIELD_CHANCE   = 0.09;
+    this.BANDAGE_CHANCE  = 0.08;
     this.COIN_CHANCE    = 0.40;
     this.COINBAG_CHANCE = 0.15;
     this.COINSAFE_CHANCE = 0.015;
@@ -45,17 +46,22 @@ class CollectibleSpawner {
     const canPowerup = score >= 100;
     const roll = Math.random();
 
-    const totalPowerup = canPowerup ? (this.X2_CHANCE + this.FIREBALL_CHANCE + this.SHIELD_CHANCE) : 0;
+    const bandageChance = this.BANDAGE_CHANCE;
+    const totalPowerup = (canPowerup ? (this.X2_CHANCE + this.FIREBALL_CHANCE + this.SHIELD_CHANCE) : 0) + bandageChance;
     const totalCoins   = this.COIN_CHANCE + this.COINBAG_CHANCE + this.COINSAFE_CHANCE;
 
-    if (canPowerup && roll < totalPowerup) {
+    if (roll < totalPowerup) {
       const puY = this._randomHeight();
-      if (roll < this.FIREBALL_CHANCE) {
+      if (roll < bandageChance) {
+        this.scene.powerups.push(new PowerupBandage(this.scene, spawnX, puY));
+      } else if (canPowerup && roll < bandageChance + this.FIREBALL_CHANCE) {
         this.scene.powerups.push(new PowerupFireball(this.scene, spawnX, puY));
-      } else if (roll < this.FIREBALL_CHANCE + this.SHIELD_CHANCE) {
+      } else if (canPowerup && roll < bandageChance + this.FIREBALL_CHANCE + this.SHIELD_CHANCE) {
         this.scene.powerups.push(new PowerupShield(this.scene, spawnX, puY));
-      } else {
+      } else if (canPowerup) {
         this.scene.powerups.push(new PowerupX2(this.scene, spawnX, puY));
+      } else {
+        this.scene.powerups.push(new PowerupBandage(this.scene, spawnX, puY));
       }
     } else {
       const coinRoll = Math.random();
