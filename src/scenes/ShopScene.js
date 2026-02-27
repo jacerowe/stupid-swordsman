@@ -16,10 +16,10 @@ class ShopScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(10);
 
     this.coins = this._getCoins();
-    this.coinText = this.add.text(this.W / 2, 52, '\uD83D\uDCB0 ' + this.coins + ' coins', {
+    this.coinText = this.add.text(12, 52, '\uD83D\uDCB0 ' + this.coins + ' coins', {
       fontSize: '16px', fontFamily: 'Arial Black, sans-serif',
       color: '#ffee88', stroke: '#000000', strokeThickness: 3
-    }).setOrigin(0.5).setDepth(10);
+    }).setOrigin(0, 0.5).setDepth(10);
 
     this.pages = [
       // PAGE 0: Core upgrades (levelled)

@@ -2,6 +2,7 @@ class Player {
   constructor(scene, x, y) {
     this.scene = scene;
     this.health = 3;
+    this.maxHealth = 3;
     this.invulnerable = false;
     this.invulnerableTimer = 0;
     this.invulnerableDuration = 0.8;
