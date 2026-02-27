@@ -57,12 +57,13 @@ class EnemySpawner {
     const spawnX = W + Phaser.Math.Between(40, 120);
     const canBat = score >= 500;
 
+    const hard = score >= 700;
     if (canBat && !this.lastWasBat && Math.random() < 0.25) {
       const batY = groundY - 155 - Phaser.Math.Between(0, 20);
       this.scene.enemies.push(new EnemyBat(this.scene, spawnX, batY));
       this.lastWasBat = true;
-      this.scene.crateSpawner.triggerGlobalCooldown(1.0);
-      this.scene.collectibleSpawner.triggerGlobalCooldown(0.5);
+      this.scene.crateSpawner.triggerGlobalCooldown(hard ? 0.7 : 1.0);
+      this.scene.collectibleSpawner.triggerGlobalCooldown(hard ? 0.3 : 0.5);
     } else {
       this.lastWasBat = false;
       const wasArmored = this._spawnGroundEnemy(spawnX, groundY, score);
