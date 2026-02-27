@@ -14,19 +14,28 @@ class GameScene extends Phaser.Scene {
     this.moneyEarned = 0;
     this.skyPhase = 0;
 
+    const lvl = id => parseInt(localStorage.getItem('ss_lvl_' + id) || '0');
     const own = id => localStorage.getItem('ss_own_' + id) === '1';
-    this.upgradeExtraHeart   = own('extra_heart');
-    this.upgradeCoinMagnet   = own('coin_magnet');
-    this.upgradeEnemyBounty  = own('enemy_bounty');
-    this.upgradeX2Longer     = own('x2_longer');
-    this.upgradeShieldLonger = own('shield_longer');
+    this.heartsLevel  = lvl('hearts');   // 0=3HP, 1=4HP, 2=5HP, 3=6HP, 4=7HP
+    this.x2Level      = lvl('x2');       // 0=3s, 1=4s, 2=5s, 3=6s, 4=8s
+    this.shieldLevel  = lvl('shield');   // 0=10s, 1=15s, 2=20s, 3=30s
+    this.bountyLevel  = lvl('bounty');   // 0=+0, 1=+1, 2=+3, 3=+5, 4=+7
+    this.upgradeCoinMagnet   = lvl('magnet') > 0 || own('magnet_1');
+    this.upgradeExtraHeart   = this.heartsLevel > 0; // legacy compat
+    this.upgradeEnemyBounty  = this.bountyLevel > 0; // legacy compat
+    this.upgradeX2Longer     = this.x2Level > 0;     // legacy compat
+    this.upgradeShieldLonger = this.shieldLevel > 0; // legacy compat
 
     this.difficulty = new Difficulty(this);
     this._buildBackground();
     this._buildGround();
 
     this.player = new Player(this, Math.floor(this.W * 0.22), this.groundY - 26);
-    if (this.upgradeExtraHeart) { this.player.health = 4; this.player.maxHealth = 4; }
+    if (this.heartsLevel > 0) {
+      const hp = 3 + this.heartsLevel;
+      this.player.health = hp;
+      this.player.maxHealth = hp;
+    }
 
     this.enemies = [];
     this.crates = [];
@@ -354,11 +363,10 @@ class GameScene extends Phaser.Scene {
     this._updateEntities(dt, effectiveSpeed);
     this._checkCollisions();
 
-    const moneyTotal = parseInt(localStorage.getItem('ss_coins') || '0') + this.moneyEarned;
     if (this.uiScene) {
       this.uiScene.updateScore(this.score);
       this.uiScene.updateHearts(this.player.health);
-      this.uiScene.updateMoney(moneyTotal);
+      this.uiScene.updateMoney(this.moneyEarned);
     }
 
     const newPhase = Math.floor(this.score / 500);
@@ -493,7 +501,8 @@ class GameScene extends Phaser.Scene {
           if (player.sword) player.sword.hitSomethingThisSwing = true;
           e.takeHit(this.player);
           if (e.dead) {
-            const bonus = this.upgradeEnemyBounty ? 5 : 0;
+            const bountyValues = [0, 1, 3, 5, 7];
+            const bonus = bountyValues[this.bountyLevel] || 0;
             this.score += (10 + bonus) * this.scoreMultiplier;
             e.destroy();
             this.enemies.splice(i, 1);
@@ -538,7 +547,8 @@ class GameScene extends Phaser.Scene {
           this.fireballText.setAlpha(1);
         } else if (p instanceof PowerupShield) {
           this.shieldActive = true;
-          this.shieldTimer = this.upgradeShieldLonger ? 20 : 10;
+          const shieldDurations = [10, 15, 20, 30];
+          this.shieldTimer = shieldDurations[this.shieldLevel] || 10;
           if (this.shieldGfx) this.shieldGfx.destroy();
           this.shieldGfx = this.add.circle(
             this.player.x, this.player.y - 5, 34, 0x4488ff, 0.4
@@ -546,7 +556,8 @@ class GameScene extends Phaser.Scene {
           this.tweens.killTweensOf(this.shieldText);
           this.shieldText.setAlpha(1);
         } else {
-          const x2Dur = this.upgradeX2Longer ? 6 : 3;
+          const x2Durations = [3, 4, 5, 6, 8];
+          const x2Dur = x2Durations[this.x2Level] || 3;
           this.scoreMultiplier = 2;
           this.scoreMultiplierTimer = x2Dur;
           this.tweens.killTweensOf(this.x2Text);

@@ -15,7 +15,8 @@ class UIScene extends Phaser.Scene {
 
   _buildHUD() {
     const padding = 14;
-    const maxHp = parseInt(localStorage.getItem('ss_own_extra_heart') === '1' ? '4' : '3');
+    const heartsLv = parseInt(localStorage.getItem('ss_lvl_hearts') || '0');
+    const maxHp = 3 + heartsLv;
 
     const hudBg = this.add.rectangle(0, 0, 260, 68, 0x000000, 0.45)
       .setOrigin(0, 0)

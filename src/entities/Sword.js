@@ -16,9 +16,10 @@ class Sword {
     this.container = scene.add.container(player.x, player.y).setDepth(6);
 
     const goldSword = localStorage.getItem('ss_own_sword_gold') === '1';
-    const bladeColor = goldSword ? 0xffcc00 : 0xddddee;
-    const guardColor = goldSword ? 0xdd9900 : 0xaa8833;
-    const gripColor  = goldSword ? 0xaa6600 : 0x663311;
+    const blueSword  = localStorage.getItem('ss_own_sword_blue') === '1';
+    const bladeColor = goldSword ? 0xffcc00 : (blueSword ? 0x44aaff : 0xddddee);
+    const guardColor = goldSword ? 0xdd9900 : (blueSword ? 0x2266cc : 0xaa8833);
+    const gripColor  = goldSword ? 0xaa6600 : (blueSword ? 0x114488 : 0x663311);
 
     this.blade = scene.add.rectangle(22, 0, 40, 7, bladeColor);
     this.guard = scene.add.rectangle(4, 0, 7, 16, guardColor);
