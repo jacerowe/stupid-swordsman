@@ -7,8 +7,8 @@ class CollectibleSpawner {
     this.FIREBALL_CHANCE = 0.07;
     this.SHIELD_CHANCE  = 0.09;
     this.COIN_CHANCE    = 0.40;
-    this.COINBAG_CHANCE = 0.22;
-    this.COINSAFE_CHANCE = 0.12;
+    this.COINBAG_CHANCE = 0.15;
+    this.COINSAFE_CHANCE = 0.015;
   }
 
   _randomInterval(score) {

@@ -21,12 +21,12 @@ class ShopScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(10);
 
     this.items = [
-      { id: 'extra_heart',    label: 'Extra Heart',        desc: '+1 max HP at game start',   cost: 50,  icon: '\u2764\uFE0F',  stat: 'maxHp' },
-      { id: 'sword_gold',     label: 'Gold Sword',         desc: 'Shiny golden blade skin',   cost: 30,  icon: '\u2694\uFE0F',  stat: 'swordSkin' },
-      { id: 'x2_longer',      label: 'Longer X2',          desc: 'X2 lasts 6s instead of 3s', cost: 40,  icon: '\u26A1',       stat: 'x2Duration' },
-      { id: 'shield_longer',  label: 'Longer Shield',      desc: 'Shield lasts 20s',          cost: 40,  icon: '\uD83D\uDEE1\uFE0F', stat: 'shieldDuration' },
-      { id: 'enemy_bounty',   label: 'Enemy Bounty',       desc: 'Enemies worth +5 pts each', cost: 35,  icon: '\uD83D\uDC7E',  stat: 'enemyBonus' },
-      { id: 'coin_magnet',    label: 'Coin Magnet',        desc: 'Wider coin pickup radius',  cost: 45,  icon: '\uD83E\uDDF2',  stat: 'coinMagnet' },
+      { id: 'extra_heart',    label: 'Extra Heart',        desc: 'Start with 4 HP',           cost: 200, icon: '\u2764\uFE0F' },
+      { id: 'sword_gold',     label: 'Gold Sword',         desc: 'Golden blade - looks sick',  cost: 100, icon: '\u2694\uFE0F' },
+      { id: 'x2_longer',      label: 'Longer X2',          desc: 'X2 lasts 6s not 3s',        cost: 50,  icon: '\u26A1' },
+      { id: 'shield_longer',  label: 'Longer Shield',      desc: 'Shield lasts 20s not 10s',  cost: 50,  icon: '\uD83D\uDEE1\uFE0F' },
+      { id: 'enemy_bounty',   label: 'Enemy Bounty',       desc: '+5 pts per enemy kill',     cost: 100, icon: '\uD83D\uDC7E' },
+      { id: 'coin_magnet',    label: 'Coin Magnet',        desc: 'Auto-collect nearby coins', cost: 150, icon: '\uD83E\uDDF2' },
     ];
 
     this._buildItems();

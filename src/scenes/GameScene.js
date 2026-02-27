@@ -14,11 +14,19 @@ class GameScene extends Phaser.Scene {
     this.moneyEarned = 0;
     this.skyPhase = 0;
 
+    const own = id => localStorage.getItem('ss_own_' + id) === '1';
+    this.upgradeExtraHeart   = own('extra_heart');
+    this.upgradeCoinMagnet   = own('coin_magnet');
+    this.upgradeEnemyBounty  = own('enemy_bounty');
+    this.upgradeX2Longer     = own('x2_longer');
+    this.upgradeShieldLonger = own('shield_longer');
+
     this.difficulty = new Difficulty(this);
     this._buildBackground();
     this._buildGround();
 
     this.player = new Player(this, Math.floor(this.W * 0.22), this.groundY - 26);
+    if (this.upgradeExtraHeart) { this.player.health = 4; this.player.maxHealth = 4; }
 
     this.enemies = [];
     this.crates = [];
@@ -154,27 +162,49 @@ class GameScene extends Phaser.Scene {
     return layers;
   }
 
+  _lerpColor(a, b, t) {
+    const ar = (a >> 16) & 0xff, ag = (a >> 8) & 0xff, ab = a & 0xff;
+    const br = (b >> 16) & 0xff, bg = (b >> 8) & 0xff, bb = b & 0xff;
+    const r = Math.round(ar + (br - ar) * t);
+    const g = Math.round(ag + (bg - ag) * t);
+    const bl2 = Math.round(ab + (bb - ab) * t);
+    return (r << 16) | (g << 8) | bl2;
+  }
+
   _updateSky(phase) {
     const isDay = phase % 2 === 1;
-    const skyTop = isDay ? 0x1a3a6e : 0x0d0d2b;
-    const skyBot = isDay ? 0x2a5a9e : 0x1a1a3e;
-    const moonColor = isDay ? 0xffee88 : 0xeeeebb;
+    const fromTop = isDay ? 0x0d0d2b : 0x1a3a6e;
+    const toTop   = isDay ? 0x1a3a6e : 0x0d0d2b;
+    const fromBot = isDay ? 0x1a1a3e : 0x2a5a9e;
+    const toBot   = isDay ? 0x2a5a9e : 0x1a1a3e;
     const moonAlpha = isDay ? 0 : 1;
 
     if (this.skyRects && this.skyRects.length) {
-      this.tweens.add({ targets: this.skyRects[0], fillColor: skyTop, duration: 1500 });
-      this.tweens.add({ targets: this.skyRects[1], fillColor: skyBot, duration: 1500 });
+      const r0 = this.skyRects[0], r1 = this.skyRects[1];
+      let elapsed = 0;
+      const duration = 1.5;
+      const ticker = this.time.addEvent({
+        delay: 16, loop: true, callback: () => {
+          elapsed += 0.016;
+          const t = Math.min(elapsed / duration, 1);
+          r0.setFillStyle(this._lerpColor(fromTop, toTop, t));
+          r1.setFillStyle(this._lerpColor(fromBot, toBot, t));
+          if (t >= 1) ticker.remove();
+        }
+      });
     }
-    if (this.moonGfx) {
-      this.tweens.add({ targets: this.moonGfx, alpha: moonAlpha, duration: 1500 });
-      this.moonGfx.fillColor = moonColor;
-    }
-    if (this.starsGfx) {
-      this.tweens.add({ targets: this.starsGfx, alpha: moonAlpha, duration: 1500 });
+
+    if (this.moonGfx) this.tweens.add({ targets: this.moonGfx, alpha: moonAlpha, duration: 1500 });
+    if (this.starsGfx) this.tweens.add({ targets: this.starsGfx, alpha: moonAlpha, duration: 1500 });
+
+    if (isDay) {
+      this._showSun();
+    } else {
+      this._hideSun();
     }
 
     if (phase > 0) {
-      const label = isDay ? '☀️ DAYTIME' : '🌙 NIGHTFALL';
+      const label = isDay ? 'DAYTIME' : 'NIGHTFALL';
       const color = isDay ? '#ffee44' : '#aaccff';
       const msg = this.add.text(this.W / 2, 75, label, {
         fontSize: '20px', fontFamily: 'Arial Black, sans-serif',
@@ -182,6 +212,54 @@ class GameScene extends Phaser.Scene {
       }).setOrigin(0.5).setDepth(22).setAlpha(0);
       this.tweens.add({ targets: msg, alpha: 1, duration: 400, yoyo: true, hold: 1200,
         onComplete: () => msg.destroy() });
+    }
+  }
+
+  _showSun() {
+    if (!this.sunGfx) {
+      this.sunGfx = this.add.circle(this.W * 0.78, this.H * 0.17, 22, 0xffdd00).setDepth(-9).setAlpha(0);
+      this.sunRays = this.add.graphics().setDepth(-9).setAlpha(0);
+      this._drawSunRays();
+    }
+    if (!this.cloudGroup) {
+      this.cloudGroup = [];
+      const cloudDefs = [
+        { x: this.W * 0.3, y: this.H * 0.12, s: 1.0 },
+        { x: this.W * 0.6, y: this.H * 0.08, s: 0.7 },
+        { x: this.W * 0.15, y: this.H * 0.20, s: 0.85 }
+      ];
+      cloudDefs.forEach(d => {
+        const g = this.add.graphics().setDepth(-9).setAlpha(0);
+        g.fillStyle(0xffffff, 0.85);
+        g.fillEllipse(0, 0, 70 * d.s, 28 * d.s);
+        g.fillEllipse(-18 * d.s, -8 * d.s, 40 * d.s, 28 * d.s);
+        g.fillEllipse(18 * d.s, -10 * d.s, 44 * d.s, 30 * d.s);
+        g.x = d.x; g.y = d.y;
+        this.cloudGroup.push({ gfx: g, baseX: d.x, speed: 18 + Math.random() * 12 });
+        this.tweens.add({ targets: g, alpha: 1, duration: 1500 });
+      });
+    } else {
+      this.cloudGroup.forEach(c => this.tweens.add({ targets: c.gfx, alpha: 1, duration: 1500 }));
+    }
+    this.tweens.add({ targets: [this.sunGfx, this.sunRays], alpha: 1, duration: 1500 });
+  }
+
+  _hideSun() {
+    if (this.sunGfx) this.tweens.add({ targets: [this.sunGfx, this.sunRays], alpha: 0, duration: 1500 });
+    if (this.cloudGroup) this.cloudGroup.forEach(c => this.tweens.add({ targets: c.gfx, alpha: 0, duration: 1500 }));
+  }
+
+  _drawSunRays() {
+    if (!this.sunRays) return;
+    const cx = this.W * 0.78, cy = this.H * 0.17;
+    this.sunRays.clear();
+    this.sunRays.lineStyle(2, 0xffee44, 0.7);
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      this.sunRays.strokeLineShape(new Phaser.Geom.Line(
+        cx + Math.cos(angle) * 26, cy + Math.sin(angle) * 26,
+        cx + Math.cos(angle) * 38, cy + Math.sin(angle) * 38
+      ));
     }
   }
 
@@ -325,6 +403,13 @@ class GameScene extends Phaser.Scene {
       s.obj.x -= drift;
       if (s.obj.x < -20) s.obj.x += this.W + 40;
     });
+
+    if (this.cloudGroup) {
+      this.cloudGroup.forEach(c => {
+        c.gfx.x -= c.speed * dt;
+        if (c.gfx.x < -120) c.gfx.x = this.W + 80;
+      });
+    }
   }
 
   _updateEntities(dt, speed) {
@@ -408,7 +493,8 @@ class GameScene extends Phaser.Scene {
           if (player.sword) player.sword.hitSomethingThisSwing = true;
           e.takeHit(this.player);
           if (e.dead) {
-            this.score += 10 * this.scoreMultiplier;
+            const bonus = this.upgradeEnemyBounty ? 5 : 0;
+            this.score += (10 + bonus) * this.scoreMultiplier;
             e.destroy();
             this.enemies.splice(i, 1);
           }
@@ -452,7 +538,7 @@ class GameScene extends Phaser.Scene {
           this.fireballText.setAlpha(1);
         } else if (p instanceof PowerupShield) {
           this.shieldActive = true;
-          this.shieldTimer = 10;
+          this.shieldTimer = this.upgradeShieldLonger ? 20 : 10;
           if (this.shieldGfx) this.shieldGfx.destroy();
           this.shieldGfx = this.add.circle(
             this.player.x, this.player.y - 5, 34, 0x4488ff, 0.4
@@ -460,18 +546,21 @@ class GameScene extends Phaser.Scene {
           this.tweens.killTweensOf(this.shieldText);
           this.shieldText.setAlpha(1);
         } else {
+          const x2Dur = this.upgradeX2Longer ? 6 : 3;
           this.scoreMultiplier = 2;
-          this.scoreMultiplierTimer = 3;
+          this.scoreMultiplierTimer = x2Dur;
           this.tweens.killTweensOf(this.x2Text);
-          this.x2Text.setAlpha(1).setText('x2 SCORE! 3s');
+          this.x2Text.setAlpha(1).setText('x2 SCORE! ' + x2Dur + 's');
         }
       }
     }
 
+    const coinPickupW = this.upgradeCoinMagnet ? pHalfW * 5 : pHalfW * 2;
+    const coinPickupH = this.upgradeCoinMagnet ? pHalfH * 4 : pHalfH * 2;
     for (let i = this.coins.length - 1; i >= 0; i--) {
       const c = this.coins[i];
       if (c.collected) continue;
-      if (overlaps(px, py, pHalfW * 2, pHalfH * 2, c.x, c.y, c.width, c.height)) {
+      if (overlaps(px, py, coinPickupW, coinPickupH, c.x, c.y, c.width, c.height)) {
         c.collect();
         this.coins.splice(i, 1);
         const earned = c.scoreValue * this.scoreMultiplier;
