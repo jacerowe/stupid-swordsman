@@ -18,31 +18,17 @@ class PowerupShield {
     this.container = this.scene.add.container(this.x, this.y).setDepth(5);
 
     this.glow = this.scene.add.circle(0, 0, 20, 0x4488ff, 0.35);
-    this.shieldBody = this.scene.add.triangle(
-      0, 0,
-      -14, -16,
-      14, -16,
-      14, 6,
-      0x2255dd
-    );
-    this.shieldBottom = this.scene.add.triangle(
-      0, 0,
-      -14, 6,
-      14, 6,
-      0, 18,
-      0x2255dd
-    );
-    this.shieldHighlight = this.scene.add.triangle(
-      0, 0,
-      -7, -12,
-      0, -12,
-      -7, 4,
-      0x88aaff
-    );
+    this.shieldGfx = this.scene.add.graphics();
+    this.shieldGfx.fillStyle(0x2255dd, 1);
+    this.shieldGfx.fillTriangle(-14, -16, 14, -16, 14, 6);
+    this.shieldGfx.fillTriangle(-14, 6, 14, 6, 0, 18);
+    this.shieldGfx.fillTriangle(-14, -16, -14, 6, 14, 6);
+    this.shieldGfx.fillStyle(0x88aaff, 1);
+    this.shieldGfx.fillTriangle(-7, -12, 0, -12, -7, 4);
     this.cross = this.scene.add.rectangle(0, -5, 5, 16, 0xaaccff);
     this.crossH = this.scene.add.rectangle(0, -5, 14, 5, 0xaaccff);
 
-    this.container.add([this.glow, this.shieldBody, this.shieldBottom, this.shieldHighlight, this.cross, this.crossH]);
+    this.container.add([this.glow, this.shieldGfx, this.cross, this.crossH]);
   }
 
   update(dt, speed) {

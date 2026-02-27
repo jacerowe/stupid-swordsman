@@ -28,7 +28,9 @@ class EnemyBasic {
     this.mouth = this.scene.add.rectangle(0, -8, 10, 3, 0x880000);
     this.armL = this.scene.add.rectangle(-18, 4, 7, 18, 0xcc2222);
     this.armR = this.scene.add.rectangle(18, 4, 7, 18, 0xcc2222);
-    this.horn1 = this.scene.add.triangle(0, -26, -6, 0, 6, 0, 0, -13, 0xaa0000);
+    this.horn1 = this.scene.add.graphics();
+    this.horn1.fillStyle(0xaa0000, 1);
+    this.horn1.fillTriangle(-6, -26, 6, -26, 0, -39);
 
     this.container.add([this.shadow, this.legL, this.legR, this.body, this.head,
                         this.eyeL, this.eyeR, this.mouth, this.armL, this.armR, this.horn1]);

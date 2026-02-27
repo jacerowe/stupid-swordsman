@@ -31,7 +31,9 @@ class GameScene extends Phaser.Scene {
     this.shieldTimer = 0;
     this.shieldGfx = null;
 
-    this.spawner = new Spawner(this);
+    this.enemySpawner = new EnemySpawner(this);
+    this.crateSpawner = new CrateSpawner(this);
+    this.collectibleSpawner = new CollectibleSpawner(this);
 
     this.rKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
 
@@ -232,7 +234,9 @@ class GameScene extends Phaser.Scene {
 
     this.player.update(time, delta);
 
-    this.spawner.update(time, dt, this.score, speed);
+    this.enemySpawner.update(dt, this.score);
+    this.crateSpawner.update(dt, this.score);
+    this.collectibleSpawner.update(dt, this.score);
 
     this._updateEntities(dt, effectiveSpeed);
     this._checkCollisions();
@@ -409,8 +413,8 @@ class GameScene extends Phaser.Scene {
       if (overlaps(px, py, pHalfW * 2, pHalfH * 2, c.x, c.y, c.width, c.height)) {
         c.collect();
         this.coins.splice(i, 1);
-        this.score += c.scoreValue;
-        const popup = this.add.text(c.x, c.y - 10, '+' + c.scoreValue, {
+        this.score += c.scoreValue * this.scoreMultiplier;
+        const popup = this.add.text(c.x, c.y - 10, '+' + (c.scoreValue * this.scoreMultiplier), {
           fontSize: '14px', fontFamily: 'Arial Black', color: '#ffee00',
           stroke: '#000000', strokeThickness: 3
         }).setDepth(25);

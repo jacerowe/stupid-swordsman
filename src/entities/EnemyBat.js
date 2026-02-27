@@ -20,12 +20,17 @@ class EnemyBat {
   _buildGraphics() {
     this.container = this.scene.add.container(this.x, this.y).setDepth(4);
 
-    this.wingL = this.scene.add.triangle(0, 0, 0, -4, -32, -8, -4, 10, 0x442266);
-    this.wingR = this.scene.add.triangle(0, 0, 0, -4, 32, -8, 4, 10, 0x442266);
+    this.wingL = this.scene.add.graphics();
+    this.wingR = this.scene.add.graphics();
+    this._drawWings(1);
     this.body  = this.scene.add.ellipse(0, 2, 22, 18, 0x221133);
     this.head  = this.scene.add.circle(0, -10, 8, 0x331144);
-    this.earL  = this.scene.add.triangle(-5, -18, -8, 0, -2, 0, -5, -10, 0x442266);
-    this.earR  = this.scene.add.triangle(5, -18, 2, 0, 8, 0, 5, -10, 0x442266);
+    this.earL  = this.scene.add.graphics();
+    this.earL.fillStyle(0x442266, 1);
+    this.earL.fillTriangle(-9, -18, -3, -18, -6, -27);
+    this.earR  = this.scene.add.graphics();
+    this.earR.fillStyle(0x442266, 1);
+    this.earR.fillTriangle(3, -18, 9, -18, 6, -27);
     this.eyeL  = this.scene.add.rectangle(-3, -11, 4, 4, 0xff3399);
     this.eyeR  = this.scene.add.rectangle(3, -11, 4, 4, 0xff3399);
 
@@ -48,13 +53,16 @@ class EnemyBat {
       this.flapTimer = 0;
       this.flapFrame = (this.flapFrame + 1) % 2;
     }
-    if (this.flapFrame === 0) {
-      this.wingL.setScale(1, 1);
-      this.wingR.setScale(1, 1);
-    } else {
-      this.wingL.setScale(1, 0.3);
-      this.wingR.setScale(1, 0.3);
-    }
+    this._drawWings(this.flapFrame === 0 ? 1 : 0.35);
+  }
+
+  _drawWings(flapY) {
+    this.wingL.clear();
+    this.wingL.fillStyle(0x442266, 1);
+    this.wingL.fillTriangle(0, 0, -34, -6 * flapY, -6, 12 * flapY);
+    this.wingR.clear();
+    this.wingR.fillStyle(0x442266, 1);
+    this.wingR.fillTriangle(0, 0, 34, -6 * flapY, 6, 12 * flapY);
   }
 
   takeHit() {
