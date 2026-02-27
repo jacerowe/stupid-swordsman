@@ -11,6 +11,8 @@ class GameScene extends Phaser.Scene {
     this.gameOver = false;
     this.score = 0;
     this.scoreTimer = 0;
+    this.moneyEarned = 0;
+    this.skyPhase = 0;
 
     this.difficulty = new Difficulty(this);
     this._buildBackground();
@@ -75,6 +77,7 @@ class GameScene extends Phaser.Scene {
 
     this.scene.launch('UIScene');
     this.uiScene = this.scene.get('UIScene');
+    this._updateSky(0);
   }
 
   _buildBackground() {
@@ -86,9 +89,10 @@ class GameScene extends Phaser.Scene {
       { y: 0, h: H * 0.55, color: 0x0d0d2b },
       { y: H * 0.55, h: H * 0.45, color: 0x1a1a3e }
     ];
-    skyColors.forEach(s => {
+    this.skyRects = skyColors.map(s => {
       const rect = this.add.rectangle(W / 2, s.y + s.h / 2, W, s.h, s.color);
       rect.setDepth(-10);
+      return rect;
     });
 
     this.moonGfx = this.add.circle(W * 0.8, H * 0.18, 28, 0xeeeebb);
@@ -148,6 +152,37 @@ class GameScene extends Phaser.Scene {
       layers.push({ rt, speed: speeds[i] || speeds[speeds.length - 1], x: 0 });
     }
     return layers;
+  }
+
+  _updateSky(phase) {
+    const isDay = phase % 2 === 1;
+    const skyTop = isDay ? 0x1a3a6e : 0x0d0d2b;
+    const skyBot = isDay ? 0x2a5a9e : 0x1a1a3e;
+    const moonColor = isDay ? 0xffee88 : 0xeeeebb;
+    const moonAlpha = isDay ? 0 : 1;
+
+    if (this.skyRects && this.skyRects.length) {
+      this.tweens.add({ targets: this.skyRects[0], fillColor: skyTop, duration: 1500 });
+      this.tweens.add({ targets: this.skyRects[1], fillColor: skyBot, duration: 1500 });
+    }
+    if (this.moonGfx) {
+      this.tweens.add({ targets: this.moonGfx, alpha: moonAlpha, duration: 1500 });
+      this.moonGfx.fillColor = moonColor;
+    }
+    if (this.starsGfx) {
+      this.tweens.add({ targets: this.starsGfx, alpha: moonAlpha, duration: 1500 });
+    }
+
+    if (phase > 0) {
+      const label = isDay ? '☀️ DAYTIME' : '🌙 NIGHTFALL';
+      const color = isDay ? '#ffee44' : '#aaccff';
+      const msg = this.add.text(this.W / 2, 75, label, {
+        fontSize: '20px', fontFamily: 'Arial Black, sans-serif',
+        color: color, stroke: '#000000', strokeThickness: 4
+      }).setOrigin(0.5).setDepth(22).setAlpha(0);
+      this.tweens.add({ targets: msg, alpha: 1, duration: 400, yoyo: true, hold: 1200,
+        onComplete: () => msg.destroy() });
+    }
   }
 
   _buildGround() {
@@ -241,9 +276,17 @@ class GameScene extends Phaser.Scene {
     this._updateEntities(dt, effectiveSpeed);
     this._checkCollisions();
 
+    const moneyTotal = parseInt(localStorage.getItem('ss_coins') || '0') + this.moneyEarned;
     if (this.uiScene) {
       this.uiScene.updateScore(this.score);
       this.uiScene.updateHearts(this.player.health);
+      this.uiScene.updateMoney(moneyTotal);
+    }
+
+    const newPhase = Math.floor(this.score / 500);
+    if (newPhase !== this.skyPhase) {
+      this.skyPhase = newPhase;
+      this._updateSky(newPhase);
     }
   }
 
@@ -431,8 +474,9 @@ class GameScene extends Phaser.Scene {
       if (overlaps(px, py, pHalfW * 2, pHalfH * 2, c.x, c.y, c.width, c.height)) {
         c.collect();
         this.coins.splice(i, 1);
-        this.score += c.scoreValue * this.scoreMultiplier;
-        const popup = this.add.text(c.x, c.y - 10, '+' + (c.scoreValue * this.scoreMultiplier), {
+        const earned = c.scoreValue * this.scoreMultiplier;
+        this.moneyEarned += earned;
+        const popup = this.add.text(c.x, c.y - 10, '+' + earned + '💰', {
           fontSize: '14px', fontFamily: 'Arial Black', color: '#ffee00',
           stroke: '#000000', strokeThickness: 3
         }).setDepth(25);
@@ -464,7 +508,9 @@ class GameScene extends Phaser.Scene {
     if (this.gameOver) return;
     this.gameOver = true;
     this.physics.pause();
-    if (this.uiScene) this.uiScene.showGameOver(this.score);
+    const prev = parseInt(localStorage.getItem('ss_coins') || '0');
+    localStorage.setItem('ss_coins', String(prev + this.moneyEarned));
+    if (this.uiScene) this.uiScene.showGameOver(this.score, this.moneyEarned);
   }
 
   restartGame() {

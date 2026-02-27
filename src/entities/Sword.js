@@ -9,9 +9,9 @@ class Sword {
     this.cooldownDuration = 0.001;
     this.hitSomethingThisSwing = false;
     this.swingTimer = 0;
-    this.swingDuration = 0.12;
-    this.activeFrameStart = 0.025;
-    this.activeFrameEnd = 0.095;
+    this.swingDuration = 0.06;
+    this.activeFrameStart = 0.01;
+    this.activeFrameEnd = 0.05;
 
     this.container = scene.add.container(player.x, player.y).setDepth(6);
 
