@@ -5,6 +5,8 @@ class Difficulty {
     this.milestone300 = false;
     this.milestone500 = false;
     this.milestone700 = false;
+    this.milestone1000 = false;
+    this.milestone1500 = false;
   }
 
   update(score) {
@@ -23,9 +25,19 @@ class Difficulty {
       this.speed = 520;
       this._showMilestone('Armored Enemies!', 0xff4444);
     }
-    if (score > 700) {
-      const extra = Math.floor((score - 700) / 100) * 10;
-      this.speed = Math.min(700, 520 + extra);
+    if (!this.milestone1000 && score >= 1000) {
+      this.milestone1000 = true;
+      this.speed = 620;
+      this._showMilestone('DANGER ZONE!', 0xff2200);
+    }
+    if (!this.milestone1500 && score >= 1500) {
+      this.milestone1500 = true;
+      this.speed = 720;
+      this._showMilestone('CHAOS!', 0xff0000);
+    }
+    if (score > 1500) {
+      const extra = Math.floor((score - 1500) / 200) * 15;
+      this.speed = Math.min(900, 720 + extra);
     }
   }
 

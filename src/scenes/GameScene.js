@@ -189,6 +189,8 @@ class GameScene extends Phaser.Scene {
 
     if (this.scoreMultiplierTimer > 0) {
       this.scoreMultiplierTimer -= dt;
+      const secs = Math.ceil(this.scoreMultiplierTimer);
+      this.x2Text.setText('x2 SCORE! ' + secs + 's');
       if (this.scoreMultiplierTimer <= 0) {
         this.scoreMultiplier = 1;
         this.scoreMultiplierTimer = 0;
@@ -396,7 +398,7 @@ class GameScene extends Phaser.Scene {
           this.scoreMultiplier = 2;
           this.scoreMultiplierTimer = 3;
           this.tweens.killTweensOf(this.x2Text);
-          this.x2Text.setAlpha(1);
+          this.x2Text.setAlpha(1).setText('x2 SCORE! 3s');
         }
       }
     }
@@ -407,8 +409,8 @@ class GameScene extends Phaser.Scene {
       if (overlaps(px, py, pHalfW * 2, pHalfH * 2, c.x, c.y, c.width, c.height)) {
         c.collect();
         this.coins.splice(i, 1);
-        this.score += c.scoreValue * this.scoreMultiplier;
-        const popup = this.add.text(c.x, c.y - 10, '+' + (c.scoreValue * this.scoreMultiplier), {
+        this.score += c.scoreValue;
+        const popup = this.add.text(c.x, c.y - 10, '+' + c.scoreValue, {
           fontSize: '14px', fontFamily: 'Arial Black', color: '#ffee00',
           stroke: '#000000', strokeThickness: 3
         }).setDepth(25);

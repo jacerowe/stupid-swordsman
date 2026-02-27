@@ -20,8 +20,12 @@ class Spawner {
   }
 
   _randomInterval(score) {
-    const base = score >= 300 ? 0.75 : 0.9;
-    const top  = score >= 300 ? 1.3 : 1.6;
+    let base, top;
+    if (score >= 1500) { base = 0.4; top = 0.65; }
+    else if (score >= 1000) { base = 0.5; top = 0.8; }
+    else if (score >= 700)  { base = 0.6; top = 1.0; }
+    else if (score >= 300)  { base = 0.75; top = 1.3; }
+    else                    { base = 0.9; top = 1.6; }
     return base + Math.random() * (top - base);
   }
 
@@ -130,18 +134,24 @@ class Spawner {
       this.lastWasCrate = false;
       this.lastWasBat = false;
 
-      const clusterChance = score >= 700 ? 0.15 : this.CLUSTER_CHANCE;
-      const clusterGapMin = score >= 700 ? 90 : 50;
-      const clusterGapMax = score >= 700 ? 130 : 80;
+      let clusterChance, clusterGapMin, clusterGapMax;
+      if (score >= 1500)     { clusterChance = 0.55; clusterGapMin = 55; clusterGapMax = 90; }
+      else if (score >= 1000){ clusterChance = 0.45; clusterGapMin = 60; clusterGapMax = 100; }
+      else if (score >= 700) { clusterChance = 0.20; clusterGapMin = 80; clusterGapMax = 120; }
+      else                   { clusterChance = this.CLUSTER_CHANCE; clusterGapMin = 50; clusterGapMax = 80; }
       if (!wasArmored && Math.random() < clusterChance) {
         const gap = Phaser.Math.Between(clusterGapMin, clusterGapMax);
         this._spawnGroundEnemy(spawnX + gap, groundY, score);
+        if (score >= 1000 && Math.random() < 0.3) {
+          this._spawnGroundEnemy(spawnX + gap * 2, groundY, score);
+        }
       }
     }
 
     let interval = this._randomInterval(score);
-    if (spawned === 'crate') interval *= 1.2;
-    if (this.lastWasArmored) interval *= 1.8;
-    this.timer = Math.max(0.7, interval);
+    if (spawned === 'crate') interval *= 1.1;
+    if (this.lastWasArmored) interval *= (score >= 1000 ? 1.2 : 1.5);
+    const minInterval = score >= 1500 ? 0.35 : score >= 1000 ? 0.45 : 0.55;
+    this.timer = Math.max(minInterval, interval);
   }
 }
