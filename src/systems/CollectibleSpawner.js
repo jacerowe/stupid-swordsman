@@ -28,8 +28,8 @@ class CollectibleSpawner {
     else              return groundY - 155;
   }
 
-  triggerGlobalCooldown() {
-    this.globalCooldown = 0.3;
+  triggerGlobalCooldown(duration) {
+    this.globalCooldown = Math.max(this.globalCooldown, duration !== undefined ? duration : 0.3);
   }
 
   update(dt, score) {

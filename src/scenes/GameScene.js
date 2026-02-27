@@ -345,14 +345,8 @@ class GameScene extends Phaser.Scene {
         const c = this.crates[ci];
         if (c.dead) continue;
         if (overlaps(px, py, pHalfW * 2, pHalfH * 2, c.x, c.y, c.width * 0.8, c.height * 0.8)) {
-          if (c.breakable) {
-            c.smash();
-            this.crates.splice(ci, 1);
-            this.score += 5;
-          } else {
-            if (this.shieldActive) { this._breakShield(); }
-            else { player.takeDamage(); }
-          }
+          if (this.shieldActive) { this._breakShield(); }
+          else { player.takeDamage(); }
           break;
         }
       }

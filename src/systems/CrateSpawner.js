@@ -14,8 +14,8 @@ class CrateSpawner {
     return base + Math.random() * (top - base);
   }
 
-  triggerGlobalCooldown() {
-    this.globalCooldown = 0.3;
+  triggerGlobalCooldown(duration) {
+    this.globalCooldown = Math.max(this.globalCooldown, duration !== undefined ? duration : 0.3);
   }
 
   update(dt, score) {
@@ -32,9 +32,12 @@ class CrateSpawner {
 
     if (isBreakable) {
       this.scene.crates.push(new BreakableCrate(this.scene, spawnX, this.scene.groundY - 20));
+      this.scene.enemySpawner.triggerGlobalCooldown(0.7);
+      this.scene.collectibleSpawner.triggerGlobalCooldown(0.5);
     } else {
       this.scene.crates.push(new Crate(this.scene, spawnX, this.scene.groundY - 20));
-      this.scene.enemySpawner.triggerGlobalCooldown(0.9);
+      this.scene.enemySpawner.triggerGlobalCooldown(1.0);
+      this.scene.collectibleSpawner.triggerGlobalCooldown(0.7);
     }
 
     this.timer = this._randomInterval(score);
