@@ -14,30 +14,69 @@ class BreakableCrate {
   _buildGraphics() {
     this.container = this.scene.add.container(this.x, this.y).setDepth(4);
 
-    this.shadow = this.scene.add.ellipse(0, 22, 36, 8, 0x000000, 0.25);
-    this.box = this.scene.add.rectangle(0, 0, 40, 40, 0x886622);
+    this.shadow = this.scene.add.ellipse(2, 23, 40, 9, 0x000000, 0.28);
+    this.container.add(this.shadow);
 
-    const lineGfx = this.scene.add.graphics();
-    lineGfx.lineStyle(2, 0x5a3a12, 1);
-    lineGfx.lineBetween(-20, 0, 20, 0);
-    lineGfx.lineBetween(0, -20, 0, 20);
-    lineGfx.strokeRect(-19, -19, 38, 38);
+    const g = this.scene.add.graphics();
 
-    const crackGfx = this.scene.add.graphics();
-    crackGfx.lineStyle(2, 0x331100, 0.9);
-    crackGfx.lineBetween(-4, -19, 2, -5);
-    crackGfx.lineBetween(2, -5, -3, 4);
-    crackGfx.lineBetween(-3, 4, 4, 14);
-    crackGfx.lineStyle(1, 0x331100, 0.7);
-    crackGfx.lineBetween(8, -15, 5, -3);
-    crackGfx.lineBetween(-10, 5, -6, 12);
+    // Darker wood (slightly damaged/aged)
+    g.fillStyle(0xaa6620, 1);
+    g.fillRect(-19, -19, 38, 38);
 
-    this.exclaim = this.scene.add.text(0, -2, '!', {
-      fontSize: '18px', fontFamily: 'Arial Black', color: '#ffcc00',
-      stroke: '#331100', strokeThickness: 3
-    }).setOrigin(0.5, 0.5).setAlpha(0.85);
+    // Wood plank bands
+    g.fillStyle(0x8a4e14, 1);
+    g.fillRect(-19, -19, 38, 5);
+    g.fillRect(-19, -1, 38, 5);
+    g.fillRect(-19, 14, 38, 5);
 
-    this.container.add([this.shadow, this.box, lineGfx, crackGfx, this.exclaim]);
+    // Top-left bevel highlight
+    g.fillStyle(0xcc7a30, 0.5);
+    g.fillRect(-18, -18, 36, 3);
+    g.fillRect(-18, -18, 3, 36);
+
+    // Grain lines
+    g.lineStyle(1, 0x6a3a10, 0.6);
+    g.lineBetween(-8, -19, -8, 19);
+    g.lineBetween(8, -19, 8, 19);
+
+    // Cross braces
+    g.lineStyle(2, 0x6a3a10, 1);
+    g.lineBetween(-19, -8, 19, -8);
+    g.lineBetween(-19, 8, 19, 8);
+
+    // Border
+    g.lineStyle(2, 0x441800, 1);
+    g.strokeRect(-19, -19, 38, 38);
+
+    // Metal corner brackets
+    g.fillStyle(0x8899aa, 1);
+    const corners = [[-19,-19],[19,-19],[-19,19],[19,19]];
+    corners.forEach(([cx, cy]) => {
+      const sx = cx < 0 ? 1 : -1;
+      const sy = cy < 0 ? 1 : -1;
+      g.fillRect(cx, cy, sx * 9, sy * 3);
+      g.fillRect(cx, cy, sx * 3, sy * 9);
+    });
+    g.fillStyle(0xaabbcc, 1);
+    [[-16,-16],[16,-16],[-16,16],[16,16]].forEach(([rx,ry]) => g.fillCircle(rx, ry, 2));
+
+    // Big diagonal crack
+    g.lineStyle(3, 0x220800, 0.95);
+    g.lineBetween(-2, -19, 6, -4);
+    g.lineBetween(6, -4, -2, 8);
+    g.lineBetween(-2, 8, 5, 19);
+    g.lineStyle(1, 0x330a00, 0.7);
+    g.lineBetween(10, -14, 7, -1);
+    g.lineBetween(-12, 4, -8, 14);
+
+    this.container.add(g);
+
+    // Yellow ! sign
+    this.exclaim = this.scene.add.text(0, -1, '!', {
+      fontSize: '20px', fontFamily: 'Arial Black',
+      color: '#ffdd00', stroke: '#553300', strokeThickness: 4
+    }).setOrigin(0.5, 0.5);
+    this.container.add(this.exclaim);
   }
 
   update(dt, speed) {

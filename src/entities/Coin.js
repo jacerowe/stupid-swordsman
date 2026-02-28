@@ -14,9 +14,30 @@ class Coin {
 
   _buildGraphics() {
     this.container = this.scene.add.container(this.x, this.y).setDepth(5);
-    this.ring = this.scene.add.circle(0, 0, 9, 0xffcc00).setStrokeStyle(2, 0xff9900);
-    this.inner = this.scene.add.circle(0, 0, 5, 0xffee55);
-    this.container.add([this.ring, this.inner]);
+
+    const g = this.scene.add.graphics();
+
+    // Outer gold rim
+    g.fillStyle(0xdd9900, 1);
+    g.fillCircle(0, 0, 11);
+    // Main gold face
+    g.fillStyle(0xffcc22, 1);
+    g.fillCircle(0, 0, 9);
+    // Highlight
+    g.fillStyle(0xffee88, 0.7);
+    g.fillCircle(-2, -2, 4);
+    // Tiny knight helmet silhouette in center
+    g.fillStyle(0xcc8800, 1);
+    g.fillRect(-3, -1, 6, 5);      // visor body
+    g.fillRect(-4, -4, 8, 4);      // helmet dome
+    g.fillRect(-5, -1, 10, 2);     // brim
+    g.fillStyle(0xffaa00, 0.5);
+    g.fillRect(-2, -3, 3, 3);      // highlight on dome
+    // Edge shadow
+    g.lineStyle(1, 0xaa6600, 1);
+    g.strokeCircle(0, 0, 9);
+
+    this.container.add(g);
   }
 
   update(dt, speed) {

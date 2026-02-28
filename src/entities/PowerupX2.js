@@ -16,16 +16,46 @@ class PowerupX2 {
   _buildGraphics() {
     this.container = this.scene.add.container(this.x, this.y).setDepth(5);
 
-    this.bg = this.scene.add.rectangle(0, 0, 32, 32, 0xffdd00).setStrokeStyle(3, 0x22cc44);
-    this.label = this.scene.add.text(0, 0, 'x2', {
-      fontSize: '16px',
-      fontFamily: 'Arial Black, sans-serif',
-      color: '#003300',
-      stroke: '#ffff00',
-      strokeThickness: 2
-    }).setOrigin(0.5, 0.5);
+    const g = this.scene.add.graphics();
 
-    this.container.add([this.bg, this.label]);
+    // Shadow
+    g.fillStyle(0x000000, 0.2);
+    g.fillEllipse(2, 20, 34, 8);
+
+    // Green outer border (thick, rounded feel)
+    g.fillStyle(0x33aa22, 1);
+    g.fillRoundedRect(-18, -18, 36, 36, 6);
+    // Green inner border shade
+    g.fillStyle(0x228811, 1);
+    g.fillRoundedRect(-16, -16, 32, 32, 5);
+
+    // Gold face
+    g.fillStyle(0xffcc22, 1);
+    g.fillRoundedRect(-14, -14, 28, 28, 4);
+    // Gold highlight
+    g.fillStyle(0xffee88, 0.6);
+    g.fillRoundedRect(-12, -12, 14, 10, 3);
+    // Gold shade bottom
+    g.fillStyle(0xcc9900, 0.4);
+    g.fillRoundedRect(-14, 6, 28, 8, 3);
+
+    // Crack details on tablet
+    g.lineStyle(1, 0xaa7700, 0.6);
+    g.lineBetween(-6, -14, -8, -4);
+    g.lineBetween(-8, -4, -4, 4);
+    g.lineBetween(8, -12, 10, 2);
+
+    this.container.add(g);
+
+    // x2 label - green text on gold
+    this.label = this.scene.add.text(0, 1, 'x2', {
+      fontSize: '17px',
+      fontFamily: 'Arial Black, sans-serif',
+      color: '#1a7700',
+      stroke: '#ffee00',
+      strokeThickness: 3
+    }).setOrigin(0.5, 0.5);
+    this.container.add(this.label);
   }
 
   update(dt, speed) {

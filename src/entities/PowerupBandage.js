@@ -7,14 +7,66 @@ class PowerupBandage {
 
     this.container = scene.add.container(x, y).setDepth(5);
 
-    const bg = scene.add.rectangle(0, 0, 26, 22, 0xffffff);
-    const stripe = scene.add.rectangle(0, 0, 8, 22, 0xff6688);
-    const stripeH = scene.add.rectangle(0, 0, 26, 8, 0xff6688);
-    const dot = scene.add.circle(0, 0, 3, 0xff2255);
+    const g = scene.add.graphics();
 
-    this.container.add([bg, stripe, stripeH, dot]);
+    // Shadow
+    g.fillStyle(0x000000, 0.2);
+    g.fillEllipse(1, 18, 34, 7);
 
-    const glowCircle = scene.add.circle(0, 0, 18, 0xff88aa, 0.25);
+    // Box base (white/grey)
+    g.fillStyle(0xeeeedd, 1);
+    g.fillRoundedRect(-16, -4, 32, 20, 3);
+    // Box base shade
+    g.fillStyle(0xccccbb, 0.5);
+    g.fillRoundedRect(-16, 8, 32, 8, 3);
+
+    // Green interior (open lid reveals inside)
+    g.fillStyle(0x44aa44, 1);
+    g.fillRoundedRect(-14, -3, 28, 16, 2);
+    g.fillStyle(0x55bb55, 0.5);
+    g.fillRect(-14, -3, 14, 6);
+
+    // Bandage strips inside
+    g.fillStyle(0xffee99, 1);
+    g.fillRect(-11, 2, 20, 5);
+    g.fillStyle(0xffdd77, 0.6);
+    g.fillRect(-11, 2, 20, 2);
+    // Bandage pad dots (little red hearts)
+    g.fillStyle(0xff4455, 1);
+    g.fillRect(-5, 3, 3, 3);
+    g.fillRect(2, 3, 3, 3);
+
+    // Lid (open, hinged up)
+    g.fillStyle(0xeeeedd, 1);
+    g.fillRoundedRect(-16, -18, 32, 16, 3);
+    g.fillStyle(0xccccbb, 0.3);
+    g.fillRect(-16, -18, 32, 4);
+    // Lid hinge
+    g.fillStyle(0x889988, 1);
+    g.fillRect(-4, -4, 8, 3);
+
+    // Red cross on lid
+    g.fillStyle(0xdd1122, 1);
+    g.fillRect(-10, -14, 20, 7);
+    g.fillRect(-5, -18, 10, 14);
+    // Cross highlight
+    g.fillStyle(0xff4455, 0.5);
+    g.fillRect(-9, -13, 6, 5);
+
+    // Box border
+    g.lineStyle(2, 0xaa9988, 1);
+    g.strokeRoundedRect(-16, -4, 32, 20, 3);
+    g.lineStyle(2, 0xaa9988, 1);
+    g.strokeRoundedRect(-16, -18, 32, 16, 3);
+
+    // Red side crosses on box
+    g.fillStyle(0xdd1122, 1);
+    g.fillRect(-16, 2, 4, 6);
+    g.fillRect(-18, 4, 8, 2);
+
+    this.container.add(g);
+
+    const glowCircle = scene.add.circle(0, 0, 22, 0xff4466, 0.2);
     this.container.addAt(glowCircle, 0);
     this.glowCircle = glowCircle;
     this.glowDir = 1;

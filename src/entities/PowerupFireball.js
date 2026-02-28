@@ -17,14 +17,41 @@ class PowerupFireball {
   _buildGraphics() {
     this.container = this.scene.add.container(this.x, this.y).setDepth(5);
 
-    this.glow = this.scene.add.circle(0, 0, 20, 0xff6600, 0.4);
-    this.ball = this.scene.add.circle(0, 0, 14, 0xff3300);
-    this.inner = this.scene.add.circle(0, -3, 7, 0xffaa00);
-    this.spark1 = this.scene.add.triangle(-8, -10, -12, -8, -4, -8, -8, -18, 0xff6600);
-    this.spark2 = this.scene.add.triangle(6, -12, 2, -10, 10, -10, 6, -20, 0xffdd00);
-    this.spark3 = this.scene.add.triangle(0, -14, -4, -11, 4, -11, 0, -22, 0xff4400);
+    // Outer glow aura
+    this.glow = this.scene.add.circle(0, 0, 26, 0xff4400, 0.25);
+    this.container.add(this.glow);
 
-    this.container.add([this.glow, this.ball, this.inner, this.spark1, this.spark2, this.spark3]);
+    const g = this.scene.add.graphics();
+
+    // Outer fire - large dark orange flames
+    g.fillStyle(0xcc3300, 1);
+    g.fillTriangle(-16, 6, 0, 6, -10, -20);
+    g.fillTriangle(16, 6, 0, 6, 10, -20);
+    g.fillTriangle(-8, 6, 8, 6, 0, -24);
+    // White flame tips
+    g.fillStyle(0xffffff, 0.6);
+    g.fillTriangle(-4, -16, 4, -16, 0, -26);
+
+    // Mid orange flames
+    g.fillStyle(0xff5500, 1);
+    g.fillTriangle(-14, 6, 2, 6, -8, -16);
+    g.fillTriangle(14, 6, -2, 6, 8, -16);
+    g.fillTriangle(-6, 4, 6, 4, 0, -18);
+
+    // Inner bright orange
+    g.fillStyle(0xff8800, 1);
+    g.fillCircle(0, 2, 14);
+    // Bright yellow center
+    g.fillStyle(0xffcc00, 1);
+    g.fillCircle(0, 2, 9);
+    // White hot core
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(0, 2, 5);
+    // Core inner glow
+    g.fillStyle(0xffee88, 0.8);
+    g.fillCircle(0, 2, 3);
+
+    this.container.add(g);
   }
 
   update(dt, speed) {
