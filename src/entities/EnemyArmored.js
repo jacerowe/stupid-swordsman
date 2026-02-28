@@ -22,36 +22,107 @@ class EnemyArmored {
   _buildGraphics() {
     this.container = this.scene.add.container(this.x, this.y).setDepth(4);
 
-    this.shadow = this.scene.add.ellipse(0, 30, 36, 9, 0x000000, 0.3);
-    this.legL = this.scene.add.rectangle(-8, 22, 10, 18, 0x555577);
-    this.legR = this.scene.add.rectangle(8, 22, 10, 18, 0x555577);
-    this.body = this.scene.add.rectangle(0, 4, 34, 28, 0x4455aa);
-    this.armor = this.scene.add.rectangle(0, 2, 38, 32, 0x7788bb);
-    this.armorLines = this.scene.add.graphics();
-    this.armorLines.lineStyle(2, 0x3344aa, 1);
-    this.armorLines.lineBetween(-16, -4, 16, -4);
-    this.armorLines.lineBetween(-16, 4, 16, 4);
-    this.armorLines.lineBetween(0, -14, 0, 14);
+    // Shadow
+    this.shadow = this.scene.add.ellipse(0, 32, 42, 10, 0x000000, 0.32);
+    this.container.add(this.shadow);
 
-    this.head = this.scene.add.circle(0, -16, 14, 0xffaa88);
-    this.helmet = this.scene.add.rectangle(0, -20, 32, 14, 0x7788bb);
-    this.helmetVisor = this.scene.add.rectangle(0, -18, 20, 7, 0x223366);
-    this.eyeL = this.scene.add.rectangle(-5, -18, 5, 4, 0x00ffff);
-    this.eyeR = this.scene.add.rectangle(5, -18, 5, 4, 0x00ffff);
+    // Chunky armored boots
+    this.bootL = this.scene.add.rectangle(-9, 28, 14, 10, 0x333344);
+    this.bootR = this.scene.add.rectangle(9, 28, 14, 10, 0x333344);
+    this.container.add([this.bootL, this.bootR]);
 
-    this.armL = this.scene.add.rectangle(-21, 4, 9, 22, 0x4455aa);
-    this.armR = this.scene.add.rectangle(21, 4, 9, 22, 0x4455aa);
-    this.shieldL = this.scene.add.rectangle(-28, 2, 10, 26, 0x7788bb);
+    // Heavy leg plates
+    this.legL = this.scene.add.rectangle(-9, 20, 13, 14, 0x556677);
+    this.legR = this.scene.add.rectangle(9, 20, 13, 14, 0x556677);
+    this.container.add([this.legL, this.legR]);
 
-    this.hpBar = this.scene.add.rectangle(0, -34, 32, 5, 0x00cc44);
-    this.hpBarBg = this.scene.add.rectangle(0, -34, 34, 7, 0x333333);
+    // Tentacle/gooey arm left (green)
+    this.tentacleGfx = this.scene.add.graphics();
+    this._drawTentacles(0);
+    this.container.add(this.tentacleGfx);
 
-    this.container.add([
-      this.shadow, this.legL, this.legR, this.armor, this.body,
-      this.armorLines, this.head, this.helmet, this.helmetVisor,
-      this.eyeL, this.eyeR, this.armL, this.armR, this.shieldL,
-      this.hpBarBg, this.hpBar
-    ]);
+    // Main body armor (massive, riveted)
+    this.armor = this.scene.add.rectangle(0, 4, 40, 32, 0x667788);
+    this.armorHighlight = this.scene.add.rectangle(-6, -1, 14, 18, 0x8899aa);
+    this.container.add([this.armor, this.armorHighlight]);
+
+    // Armor detail graphics (plates, rivets, damage marks)
+    this.armorDetail = this.scene.add.graphics();
+    this.armorDetail.lineStyle(2, 0x445566, 1);
+    this.armorDetail.lineBetween(-18, -2, 18, -2);
+    this.armorDetail.lineBetween(-18, 8, 18, 8);
+    this.armorDetail.lineBetween(0, -15, 0, 18);
+    // Rivets
+    this.armorDetail.fillStyle(0x99aabb, 1);
+    this.armorDetail.fillCircle(-14, -8, 3);
+    this.armorDetail.fillCircle(14, -8, 3);
+    this.armorDetail.fillCircle(-14, 14, 3);
+    this.armorDetail.fillCircle(14, 14, 3);
+    // Damage scratch
+    this.armorDetail.lineStyle(1, 0x334455, 1);
+    this.armorDetail.lineBetween(4, -6, 10, 4);
+    this.armorDetail.lineBetween(6, -6, 12, 4);
+    this.container.add(this.armorDetail);
+
+    // Heavy shoulder pauldrons
+    this.pauldronL = this.scene.add.rectangle(-24, -4, 14, 20, 0x778899);
+    this.pauldronR = this.scene.add.rectangle(24, -4, 14, 20, 0x778899);
+    // Pauldron spikes
+    this.pauldronSpikes = this.scene.add.graphics();
+    this.pauldronSpikes.fillStyle(0x99aabb, 1);
+    this.pauldronSpikes.fillTriangle(-28, -10, -22, -10, -25, -20);
+    this.pauldronSpikes.fillTriangle(-23, -10, -17, -10, -20, -20);
+    this.pauldronSpikes.fillTriangle(22, -10, 28, -10, 25, -20);
+    this.pauldronSpikes.fillTriangle(17, -10, 23, -10, 20, -20);
+    this.container.add([this.pauldronL, this.pauldronR, this.pauldronSpikes]);
+
+    // Helmet (full-face spiked bucket)
+    this.helmet = this.scene.add.rectangle(0, -22, 34, 20, 0x667788);
+    this.helmetHighlight = this.scene.add.rectangle(-5, -26, 10, 12, 0x8899aa);
+    this.helmetRim = this.scene.add.rectangle(0, -13, 38, 5, 0x445566);
+    // Helmet spikes
+    this.helmetSpikes = this.scene.add.graphics();
+    this.helmetSpikes.fillStyle(0x99aabb, 1);
+    this.helmetSpikes.fillTriangle(-4, -31, 4, -31, 0, -44);
+    this.helmetSpikes.fillTriangle(-14, -28, -8, -28, -11, -38);
+    this.helmetSpikes.fillTriangle(8, -28, 14, -28, 11, -38);
+    this.container.add([this.helmet, this.helmetHighlight, this.helmetRim, this.helmetSpikes]);
+
+    // Visor slit with glowing YELLOW eyes (no face visible, pure menace)
+    this.visor = this.scene.add.rectangle(0, -22, 26, 6, 0x111122);
+    // Glowing yellow eye glow
+    this.eyeGlowL = this.scene.add.rectangle(-7, -22, 9, 4, 0xffcc00);
+    this.eyeGlowR = this.scene.add.rectangle(7, -22, 9, 4, 0xffcc00);
+    this.eyeFlareL = this.scene.add.circle(-7, -22, 6, 0xffaa00, 0.3);
+    this.eyeFlareR = this.scene.add.circle(7, -22, 6, 0xffaa00, 0.3);
+    this.container.add([this.visor, this.eyeGlowL, this.eyeGlowR, this.eyeFlareL, this.eyeFlareR]);
+
+    // HP bar
+    this.hpBarBg = this.scene.add.rectangle(0, -50, 36, 7, 0x222222);
+    this.hpBar   = this.scene.add.rectangle(0, -50, 34, 5, 0x00cc44);
+    this.container.add([this.hpBarBg, this.hpBar]);
+  }
+
+  _drawTentacles(frame) {
+    this.tentacleGfx.clear();
+    const offset = frame === 0 ? 0 : 5;
+    // Left tentacle (green, gooey)
+    this.tentacleGfx.fillStyle(0x33aa22, 0.95);
+    this.tentacleGfx.fillEllipse(-28, 6 + offset, 14, 22);
+    this.tentacleGfx.fillEllipse(-30, 16 + offset, 10, 10);
+    // Sucker bumps
+    this.tentacleGfx.fillStyle(0x44cc33, 0.7);
+    this.tentacleGfx.fillCircle(-30, 4 + offset, 3);
+    this.tentacleGfx.fillCircle(-27, 10 + offset, 3);
+    this.tentacleGfx.fillCircle(-30, 16 + offset, 3);
+    // Right tentacle (purple)
+    this.tentacleGfx.fillStyle(0x9922bb, 0.95);
+    this.tentacleGfx.fillEllipse(28, 6 - offset, 14, 22);
+    this.tentacleGfx.fillEllipse(30, 16 - offset, 10, 10);
+    this.tentacleGfx.fillStyle(0xbb44dd, 0.7);
+    this.tentacleGfx.fillCircle(30, 4 - offset, 3);
+    this.tentacleGfx.fillCircle(27, 10 - offset, 3);
+    this.tentacleGfx.fillCircle(30, 16 - offset, 3);
   }
 
   _updateHpBar() {
@@ -83,17 +154,21 @@ class EnemyArmored {
 
     if (this.stunTimer <= 0) {
       this.walkTimer += dt;
-      if (this.walkTimer > 0.18) {
+      if (this.walkTimer > 0.22) {
         this.walkTimer = 0;
         this.walkFrame = (this.walkFrame + 1) % 4;
+        const step = this.walkFrame % 2;
+        const phases = [[20, 26], [23, 23], [26, 20], [23, 23]];
+        this.legL.y = phases[this.walkFrame][0];
+        this.legR.y = phases[this.walkFrame][1];
+        this._drawTentacles(step);
       }
-      const phases = [[16, 24, 24, 16], [20, 20, 20, 20], [24, 16, 16, 24], [20, 20, 20, 20]];
-      const [lly, lry, aly, ary] = phases[this.walkFrame];
-      this.legL.y = lly;
-      this.legR.y = lry;
-      this.armL.y = aly - 9;
-      this.armR.y = ary - 9;
     }
+
+    // Pulsing yellow eye glow
+    const pulse = 0.25 + Math.sin(this.scene.time.now / 150) * 0.15;
+    this.eyeFlareL.setAlpha(pulse);
+    this.eyeFlareR.setAlpha(pulse);
   }
 
   takeHit(player) {
@@ -122,17 +197,16 @@ class EnemyArmored {
   }
 
   _flashHit() {
-    const allParts = [this.body, this.armor, this.helmet, this.head, this.armL, this.armR, this.shieldL];
-    allParts.forEach(p => p.setFillStyle(0xffffff));
+    const flashParts = [this.armor, this.helmet, this.pauldronL, this.pauldronR, this.legL, this.legR];
+    flashParts.forEach(p => p.setFillStyle(0xffffff));
     this.scene.time.delayedCall(80, () => {
-      if (this.dead || !this.body) return;
-      this.body.setFillStyle(0x4455aa);
-      this.armor.setFillStyle(0x7788bb);
-      this.helmet.setFillStyle(0x7788bb);
-      this.shieldL.setFillStyle(0x7788bb);
-      this.head.setFillStyle(0xffaa88);
-      this.armL.setFillStyle(0x4455aa);
-      this.armR.setFillStyle(0x4455aa);
+      if (this.dead || !this.armor) return;
+      this.armor.setFillStyle(0x667788);
+      this.helmet.setFillStyle(0x667788);
+      this.pauldronL.setFillStyle(0x778899);
+      this.pauldronR.setFillStyle(0x778899);
+      this.legL.setFillStyle(0x556677);
+      this.legR.setFillStyle(0x556677);
     });
   }
 

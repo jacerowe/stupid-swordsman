@@ -37,43 +37,93 @@ class Player {
   _buildGraphics() {
     this.container = this.scene.add.container(this.x, this.y).setDepth(5);
 
-    this.bodyShadow = this.scene.add.ellipse(1, 28, 30, 8, 0x000000, 0.3);
+    const equippedHat = localStorage.getItem('ss_equip_hat') || 'default';
+    const equippedSword = localStorage.getItem('ss_equip_sword') || 'default';
+
+    // Shadow
+    this.bodyShadow = this.scene.add.ellipse(0, 30, 34, 9, 0x000000, 0.28);
     this.container.add(this.bodyShadow);
 
-    this.legL = this.scene.add.rectangle(-6, 22, 8, 18, 0x2244aa);
-    this.legR = this.scene.add.rectangle(6, 22, 8, 18, 0x2244aa);
+    // Boots (chunky)
+    this.bootL = this.scene.add.rectangle(-7, 26, 11, 10, 0x3a2a1a);
+    this.bootR = this.scene.add.rectangle(7, 26, 11, 10, 0x3a2a1a);
+    this.container.add([this.bootL, this.bootR]);
+
+    // Leg armour
+    this.legL = this.scene.add.rectangle(-7, 18, 10, 14, 0x7788aa);
+    this.legR = this.scene.add.rectangle(7, 18, 10, 14, 0x7788aa);
     this.container.add([this.legL, this.legR]);
 
-    this.body = this.scene.add.rectangle(0, 4, 28, 32, 0x3355cc);
-    this.container.add(this.body);
+    // Belt
+    this.belt = this.scene.add.rectangle(0, 10, 30, 6, 0x7a5530);
+    this.beltBuckle = this.scene.add.rectangle(0, 10, 7, 6, 0xddaa44);
+    this.container.add([this.belt, this.beltBuckle]);
 
-    this.head = this.scene.add.circle(0, -18, 13, 0xffcc99);
-    this.container.add(this.head);
+    // Chest armour (chunky rounded rect via graphics)
+    this.body = this.scene.add.rectangle(0, 2, 30, 22, 0x8899bb);
+    this.bodyHighlight = this.scene.add.rectangle(-4, -2, 10, 12, 0xaabbdd);
+    this.bodyRivets = this.scene.add.graphics();
+    this.bodyRivets.fillStyle(0x556688, 1);
+    this.bodyRivets.fillCircle(-9, 0, 2);
+    this.bodyRivets.fillCircle(9, 0, 2);
+    this.bodyRivets.fillCircle(0, 8, 2);
+    this.container.add([this.body, this.bodyHighlight, this.bodyRivets]);
 
-    const equippedHat = localStorage.getItem('ss_equip_hat') || 'default';
-    const hatColor = equippedHat === 'hat_blue' ? 0x2244cc : (equippedHat === 'hat_red' ? 0xcc2222 : 0x553311);
-    this.hair = this.scene.add.graphics();
-    this.hair.fillStyle(hatColor, 1);
-    if (equippedHat === 'hat_blue') {
-      this.hair.fillTriangle(-8, -31, 8, -31, 0, -56);
-    } else {
-      this.hair.fillTriangle(-10, -31, 10, -31, 0, -46);
-    }
-    this.container.add(this.hair);
+    // Red scarf/cape
+    this.scarfBack = this.scene.add.graphics();
+    this.scarfBack.fillStyle(0xcc2222, 1);
+    this.scarfBack.fillTriangle(6, -4, 16, -4, 20, 20);
+    this.container.add(this.scarfBack);
 
-    this.eyeL = this.scene.add.rectangle(-4, -18, 3, 4, 0x111111);
-    this.eyeR = this.scene.add.rectangle(4, -18, 3, 4, 0x111111);
-    this.container.add([this.eyeL, this.eyeR]);
-
-    this.scarf = this.scene.add.rectangle(0, -7, 28, 7, 0xcc3333);
+    this.scarf = this.scene.add.rectangle(0, -5, 28, 8, 0xdd2233);
     this.container.add(this.scarf);
 
-    this.armL = this.scene.add.rectangle(-17, 4, 8, 22, 0x2244aa);
-    this.armR = this.scene.add.rectangle(17, 4, 8, 22, 0x2244aa);
-    this.container.add([this.armL, this.armR]);
+    // Arm armour
+    this.armL = this.scene.add.rectangle(-18, 2, 9, 20, 0x7788aa);
+    this.armR = this.scene.add.rectangle(18, 2, 9, 20, 0x7788aa);
+    this.gauntletL = this.scene.add.rectangle(-18, 13, 10, 8, 0x556688);
+    this.gauntletR = this.scene.add.rectangle(18, 13, 10, 8, 0x556688);
+    this.container.add([this.armL, this.armR, this.gauntletL, this.gauntletR]);
 
-    this.allParts = [this.body, this.head, this.hair, this.eyeL, this.eyeR,
-                     this.scarf, this.armL, this.armR, this.legL, this.legR];
+    // Face (round and chubby)
+    this.head = this.scene.add.circle(0, -17, 13, 0xffcc99);
+    this.cheekL = this.scene.add.circle(-7, -14, 4, 0xffaa88, 0.6);
+    this.cheekR = this.scene.add.circle(7, -14, 4, 0xffaa88, 0.6);
+    this.eyeL = this.scene.add.circle(-4, -18, 5, 0xffffff);
+    this.eyeR = this.scene.add.circle(4, -18, 5, 0xffffff);
+    this.pupilL = this.scene.add.circle(-4, -17, 3, 0x111111);
+    this.pupilR = this.scene.add.circle(4, -17, 3, 0x111111);
+    this.smile = this.scene.add.graphics();
+    this.smile.lineStyle(2, 0x994422, 1);
+    this.smile.strokeEllipse(0, -11, 10, 5, 16);
+    this.container.add([this.head, this.cheekL, this.cheekR,
+                        this.eyeL, this.eyeR, this.pupilL, this.pupilR, this.smile]);
+
+    // Helmet
+    const helmetColor = equippedHat === 'hat_red' ? 0xaa2222 : (equippedHat === 'hat_blue' ? 0x2233aa : 0x889aaa);
+    const helmetHighlight = equippedHat === 'hat_red' ? 0xcc4444 : (equippedHat === 'hat_blue' ? 0x4455cc : 0xaabbcc);
+    this.helmet = this.scene.add.rectangle(0, -24, 28, 16, helmetColor);
+    this.helmetTop = this.scene.add.rectangle(0, -32, 22, 8, helmetColor);
+    this.helmetRim = this.scene.add.rectangle(0, -17, 32, 5, 0x667788);
+    this.helmetHighlight = this.scene.add.rectangle(-4, -28, 8, 10, helmetHighlight);
+    // Plume
+    this.plume = this.scene.add.graphics();
+    this.plume.fillStyle(0xdd2222, 1);
+    this.plume.fillEllipse(8, -38, 10, 18);
+    this.plume.fillStyle(0xff4444, 1);
+    this.plume.fillEllipse(5, -35, 6, 12);
+    // Visor slit
+    this.visor = this.scene.add.rectangle(0, -22, 18, 4, 0x223344);
+    this.visorGlow = this.scene.add.rectangle(0, -22, 16, 2, 0x88aacc, 0.7);
+    this.container.add([this.helmet, this.helmetTop, this.helmetRim,
+                        this.helmetHighlight, this.plume, this.visor, this.visorGlow]);
+
+    this.allParts = [this.body, this.bodyHighlight, this.bodyRivets, this.scarfBack, this.scarf,
+                     this.head, this.cheekL, this.cheekR, this.eyeL, this.eyeR,
+                     this.pupilL, this.pupilR, this.smile, this.helmet, this.helmetTop,
+                     this.helmetRim, this.helmetHighlight, this.plume, this.visor, this.visorGlow,
+                     this.armL, this.armR, this.gauntletL, this.gauntletR,
+                     this.legL, this.legR, this.bootL, this.bootR, this.belt, this.beltBuckle];
   }
 
   tryAttack() {

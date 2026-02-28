@@ -103,9 +103,10 @@ class GameScene extends Phaser.Scene {
 
     this.bgLayers = [];
 
+    // Night sky base colors (will lerp to day on phase change)
     const skyColors = [
-      { y: 0, h: H * 0.55, color: 0x0d0d2b },
-      { y: H * 0.55, h: H * 0.45, color: 0x1a1a3e }
+      { y: 0,        h: H * 0.55, color: 0x0d1a3a },
+      { y: H * 0.55, h: H * 0.45, color: 0x1a2a50 }
     ];
     this.skyRects = skyColors.map(s => {
       const rect = this.add.rectangle(W / 2, s.y + s.h / 2, W, s.h, s.color);
@@ -113,22 +114,30 @@ class GameScene extends Phaser.Scene {
       return rect;
     });
 
-    this.moonGfx = this.add.circle(W * 0.8, H * 0.18, 28, 0xeeeebb);
-    this.moonGfx.setDepth(-9);
+    // Moon (crescent-style: big circle with overlap)
+    this.moonGfx = this.add.graphics().setDepth(-9);
+    this.moonGfx.fillStyle(0xeeeebb, 1);
+    this.moonGfx.fillCircle(W * 0.8, H * 0.16, 22);
+    this.moonGfx.fillStyle(0x0d1a3a, 1);
+    this.moonGfx.fillCircle(W * 0.8 + 10, H * 0.16 - 5, 16);
 
     this.starsGfx = this.add.graphics().setDepth(-9);
     this.stars = [];
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 70; i++) {
       this.stars.push({
         x: Phaser.Math.RND.between(0, W),
-        y: Phaser.Math.RND.between(10, H * 0.45),
-        r: Phaser.Math.RND.realInRange(0.5, 2),
-        speed: Phaser.Math.RND.realInRange(0.02, 0.06)
+        y: Phaser.Math.RND.between(10, H * 0.50),
+        r: Phaser.Math.RND.realInRange(0.8, 2.2),
+        speed: Phaser.Math.RND.realInRange(0.02, 0.06),
+        twinkle: Math.random() * Math.PI * 2
       });
     }
 
+    // Pre-create sun and clouds at game start (always ready at depth 2)
+    this._buildSunAndClouds();
+
     this.bgMountains = this._createScrollLayer(3, (g, idx) => {
-      g.fillStyle(0x1e1e4f, 1);
+      g.fillStyle(0x1a2a55, 1);
       const peaks = [
         [0, 160, 120, 60, 240, 145, 300, 70, 420, 160, 500, 130, 600, 165, 700, 75, 820, 155, 900, 165, 900, 200, 0, 200],
         [0, 165, 90, 90, 180, 155, 280, 85, 380, 165, 460, 100, 560, 160, 660, 110, 760, 165, 880, 130, 950, 165, 950, 200, 0, 200],
@@ -141,7 +150,7 @@ class GameScene extends Phaser.Scene {
     }, [0.08, 0.12, 0.18], -8);
 
     this.bgCity = this._createScrollLayer(2, (g, idx) => {
-      g.fillStyle(idx === 0 ? 0x13132a : 0x0e0e22, 1);
+      g.fillStyle(idx === 0 ? 0x131a2a : 0x0e1222, 1);
       const buildings = idx === 0
         ? [[30, 100, 60, 80], [110, 110, 50, 70], [200, 90, 80, 100], [320, 105, 45, 65], [400, 85, 70, 95], [510, 100, 55, 80], [600, 80, 90, 100], [720, 110, 60, 70], [820, 92, 70, 90]]
         : [[50, 115, 40, 65], [140, 105, 60, 75], [240, 95, 55, 85], [340, 110, 50, 60], [440, 100, 65, 80], [540, 115, 45, 65], [640, 90, 75, 90], [750, 108, 55, 72], [860, 95, 65, 85]];
@@ -181,12 +190,58 @@ class GameScene extends Phaser.Scene {
     return (r << 16) | (g << 8) | bl2;
   }
 
+  _buildSunAndClouds() {
+    const D = 2; // depth above backgrounds
+    const cx = this.W * 0.18, cy = this.H * 0.16;
+
+    // Sun circle
+    this.sunGfx = this.add.circle(cx, cy, 24, 0xffee22).setDepth(D).setAlpha(0);
+
+    // Sun rays (pixel-art style - straight lines)
+    this.sunRays = this.add.graphics().setDepth(D).setAlpha(0);
+    this.sunRays.lineStyle(3, 0xffee44, 1);
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      this.sunRays.strokeLineShape(new Phaser.Geom.Line(
+        cx + Math.cos(angle) * 30, cy + Math.sin(angle) * 30,
+        cx + Math.cos(angle) * 46, cy + Math.sin(angle) * 46
+      ));
+    }
+
+    // Pixel-art fluffy clouds
+    this.cloudGroup = [];
+    const cloudDefs = [
+      { x: this.W * 0.55, y: this.H * 0.10, s: 1.0 },
+      { x: this.W * 0.78, y: this.H * 0.07, s: 0.75 },
+      { x: this.W * 0.35, y: this.H * 0.18, s: 0.85 },
+      { x: this.W * 0.90, y: this.H * 0.14, s: 0.65 },
+    ];
+    cloudDefs.forEach(d => {
+      const g = this.add.graphics().setDepth(D).setAlpha(0);
+      const s = d.s;
+      // Layered ellipses for pixel-art puffy cloud
+      g.fillStyle(0xffffff, 1);
+      g.fillEllipse(0, 0, 68 * s, 26 * s);
+      g.fillEllipse(-20 * s, -10 * s, 38 * s, 26 * s);
+      g.fillEllipse(16 * s, -12 * s, 42 * s, 28 * s);
+      g.fillEllipse(-4 * s, -16 * s, 28 * s, 20 * s);
+      // Bottom flat edge
+      g.fillStyle(0xddeeff, 0.5);
+      g.fillRect(-32 * s, 4 * s, 64 * s, 8 * s);
+      g.x = d.x; g.y = d.y;
+      this.cloudGroup.push({ gfx: g, speed: 14 + Math.random() * 10 });
+    });
+  }
+
   _updateSky(phase) {
     const isDay = phase % 2 === 1;
-    const fromTop = isDay ? 0x0d0d2b : 0x1a3a6e;
-    const toTop   = isDay ? 0x1a3a6e : 0x0d0d2b;
-    const fromBot = isDay ? 0x1a1a3e : 0x2a5a9e;
-    const toBot   = isDay ? 0x2a5a9e : 0x1a1a3e;
+    // Day: bright pixel-art blue sky; Night: dark navy
+    const nightTop = 0x0d1a3a, nightBot = 0x1a2a50;
+    const dayTop   = 0x4ab0e8, dayBot   = 0x7dd4f8;
+    const fromTop = isDay ? nightTop : dayTop;
+    const toTop   = isDay ? dayTop   : nightTop;
+    const fromBot = isDay ? nightBot : dayBot;
+    const toBot   = isDay ? dayBot   : nightBot;
     const moonAlpha = isDay ? 0 : 1;
 
     if (this.skyRects && this.skyRects.length) {
@@ -207,10 +262,10 @@ class GameScene extends Phaser.Scene {
     if (this.moonGfx) this.tweens.add({ targets: this.moonGfx, alpha: moonAlpha, duration: 1500 });
     if (this.starsGfx) this.tweens.add({ targets: this.starsGfx, alpha: moonAlpha, duration: 1500 });
 
-    if (isDay) {
-      this._showSun();
-    } else {
-      this._hideSun();
+    const sunAlpha = isDay ? 1 : 0;
+    if (this.sunGfx) this.tweens.add({ targets: [this.sunGfx, this.sunRays], alpha: sunAlpha, duration: 1500 });
+    if (this.cloudGroup) {
+      this.cloudGroup.forEach(c => this.tweens.add({ targets: c.gfx, alpha: isDay ? 1 : 0, duration: 1500 }));
     }
 
     if (phase > 0) {
@@ -222,53 +277,6 @@ class GameScene extends Phaser.Scene {
       }).setOrigin(0.5).setDepth(22).setAlpha(0);
       this.tweens.add({ targets: msg, alpha: 1, duration: 400, yoyo: true, hold: 1200,
         onComplete: () => msg.destroy() });
-    }
-  }
-
-  _showSun() {
-    const sunDepth = 2;
-    if (!this.sunGfx) {
-      this.sunGfx = this.add.circle(this.W * 0.78, this.H * 0.17, 22, 0xffdd00).setDepth(sunDepth).setAlpha(0);
-      this.sunRays = this.add.graphics().setDepth(sunDepth).setAlpha(0);
-      this._drawSunRays();
-    }
-    if (!this.cloudGroup) {
-      this.cloudGroup = [];
-      const cloudDefs = [
-        { x: this.W * 0.3,  y: this.H * 0.12, s: 1.0 },
-        { x: this.W * 0.6,  y: this.H * 0.08, s: 0.7 },
-        { x: this.W * 0.15, y: this.H * 0.20, s: 0.85 }
-      ];
-      cloudDefs.forEach(d => {
-        const g = this.add.graphics().setDepth(sunDepth).setAlpha(0);
-        g.fillStyle(0xffffff, 0.9);
-        g.fillEllipse(0, 0, 70 * d.s, 28 * d.s);
-        g.fillEllipse(-18 * d.s, -8 * d.s, 40 * d.s, 28 * d.s);
-        g.fillEllipse(18 * d.s, -10 * d.s, 44 * d.s, 30 * d.s);
-        g.x = d.x; g.y = d.y;
-        this.cloudGroup.push({ gfx: g, speed: 18 + Math.random() * 12 });
-      });
-    }
-    this.cloudGroup.forEach(c => this.tweens.add({ targets: c.gfx, alpha: 1, duration: 1500 }));
-    this.tweens.add({ targets: [this.sunGfx, this.sunRays], alpha: 1, duration: 1500 });
-  }
-
-  _hideSun() {
-    if (this.sunGfx) this.tweens.add({ targets: [this.sunGfx, this.sunRays], alpha: 0, duration: 1500 });
-    if (this.cloudGroup) this.cloudGroup.forEach(c => this.tweens.add({ targets: c.gfx, alpha: 0, duration: 1500 }));
-  }
-
-  _drawSunRays() {
-    if (!this.sunRays) return;
-    const cx = this.W * 0.78, cy = this.H * 0.17;
-    this.sunRays.clear();
-    this.sunRays.lineStyle(2, 0xffee44, 0.7);
-    for (let i = 0; i < 8; i++) {
-      const angle = (i / 8) * Math.PI * 2;
-      this.sunRays.strokeLineShape(new Phaser.Geom.Line(
-        cx + Math.cos(angle) * 26, cy + Math.sin(angle) * 26,
-        cx + Math.cos(angle) * 38, cy + Math.sin(angle) * 38
-      ));
     }
   }
 
@@ -400,10 +408,13 @@ class GameScene extends Phaser.Scene {
     });
 
     this.starsGfx.clear();
-    this.starsGfx.fillStyle(0xffffff, 1);
+    const tNow = this.time.now / 1000;
     this.stars.forEach(s => {
       s.x -= drift * s.speed;
       if (s.x < -5) s.x += this.W + 10;
+      s.twinkle += 0.04;
+      const brightness = 0.5 + Math.sin(s.twinkle) * 0.5;
+      this.starsGfx.fillStyle(0xffffff, brightness);
       this.starsGfx.fillCircle(s.x, s.y, s.r);
     });
 
