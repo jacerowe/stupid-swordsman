@@ -291,15 +291,33 @@ class GameScene extends Phaser.Scene {
     groundBody.body.setSize(W * 3, groundH);
 
     const groundGfx = this.add.graphics().setDepth(0);
-    groundGfx.fillStyle(0x1a3a1a, 1);
-    groundGfx.fillRect(0, this.groundY, W, 8);
-    groundGfx.fillStyle(0x0d1f0d, 1);
-    groundGfx.fillRect(0, this.groundY + 8, W, 32);
+    // Bright pixel-art dirt layer
+    groundGfx.fillStyle(0x8B5E3C, 1);
+    groundGfx.fillRect(0, this.groundY, W, 40);
+    // Darker dirt band
+    groundGfx.fillStyle(0x6B4226, 1);
+    groundGfx.fillRect(0, this.groundY + 14, W, 26);
+    // Bright green grass top
+    groundGfx.fillStyle(0x4cc94c, 1);
+    groundGfx.fillRect(0, this.groundY, W, 10);
+    // Lighter highlight stripe
+    groundGfx.fillStyle(0x72e872, 1);
+    groundGfx.fillRect(0, this.groundY, W, 3);
+    // Dark green shadow under grass
+    groundGfx.fillStyle(0x2a8a2a, 1);
+    groundGfx.fillRect(0, this.groundY + 10, W, 4);
 
+    // Scrolling grass tufts
     this.groundStripes = [];
-    for (let x = 0; x < W + 40; x += 40) {
-      const stripe = this.add.rectangle(x, this.groundY + 2, 3, 6, 0x2a5a2a).setDepth(1);
-      this.groundStripes.push({ obj: stripe, baseX: x });
+    for (let x = 8; x < W + 48; x += 32) {
+      const g = this.add.graphics().setDepth(1);
+      g.fillStyle(0x3ab83a, 1);
+      g.fillTriangle(0, 0, 6, 0, 3, -8);
+      g.fillTriangle(5, 0, 10, 0, 7, -6);
+      g.fillStyle(0x4cc94c, 1);
+      g.fillTriangle(2, 0, 7, 0, 4, -10);
+      g.x = x; g.y = this.groundY + 10;
+      this.groundStripes.push({ obj: g, baseX: x });
     }
   }
 
